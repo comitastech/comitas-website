@@ -63,9 +63,30 @@ Base para o design e o desenvolvimento do site. A copy está em `docs/copy.md`.
 - Ideias para o site (fazemos nossas próprias, em SVG):
   - **Hero:** vista explodida de um "sistema" em camadas (interface, regras, dados, agente de IA).
   - **Como trabalhamos:** quatro figuras numeradas, `FIG_ 01` a `FIG_ 04` (Conversa, Desenho, Construção, Evolução).
-- **Ordem de esforço:** começar com réguas, labels e legendas (baratos). As ilustrações completas entram depois do site no ar.
+- As ilustrações fazem parte da primeira versão, não são extra. Qualidade antes de prazo.
+
+## Movimento e microinterações
+O cuidado com interação é parte da identidade, não acabamento. Cada elemento clicável tem estados pensados.
+
+**Referência:** os botões da Factory. No hover, as cores invertem em 150ms e surge, com um fade de 100ms, uma textura de linhas diagonais finas que desliza devagar e sem parar enquanto o cursor está em cima.
+
+**Nossa versão (mesma ideia, linguagem própria):**
+- **Botões:** inversão de cor em 150ms (`cubic-bezier(0.4, 0, 0.2, 1)`) + **hachura de corte**, a convenção de desenho técnico para áreas cortadas: linhas a 45°, 1px, deslizando lentamente. Liga direto com o tema de ofício.
+- **Ícone de seta** nos botões que levam a outro lugar: desloca alguns pixels no hover.
+- **Links de texto:** sublinhado que se desenha da esquerda para a direita.
+- **Estados obrigatórios** em todo elemento clicável: repouso, hover, foco (visível no teclado, mesmo tratamento do hover), pressionado e desabilitado.
+
+**Na página:**
+- Entrada de seções ao rolar: fade + deslocamento curto (8–16px), uma vez só, sem exagero.
+- Réguas e marcas de medida que se "desenham" ao entrar na tela (traço animado).
+- Ilustrações técnicas com montagem em camadas (a vista explodida se abre ao rolar).
+- Legendas `FIG_` e números com efeito de digitação curto, em mono.
+
+**Regras:**
+- Durações curtas: 100–200ms em interações, até ~600ms em entradas de seção.
+- Respeitar `prefers-reduced-motion`: sem deslocamentos nem loops, só troca de cor.
+- Animar só `transform`, `opacity` e cores (performance).
 
 ## Fora do escopo agora
 - Logo definitivo (por enquanto, "COMITAS" em Geist 500 caixa alta).
 - Página Sobre.
-- Animações além de transições simples.
