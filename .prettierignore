@@ -4,3 +4,6 @@ node_modules/
 package-lock.json
 # Human-owned prose (copy and design docs) keeps its own formatting.
 *.md
+src/assets/brand/
+public/*.svg
+public/site.webmanifest
