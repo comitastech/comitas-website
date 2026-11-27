@@ -13,10 +13,14 @@ const year = new Date().getFullYear();
 // Layer geometry, as fractions of the wordmark's height. The official SVG
 // is 467.74 x 70 units (viewBox), so height = width x 70 / 467.74.
 const LOGO_RATIO = 467.74 / 70;
-const STEP = 0.2; // vertical offset between layers
-const CUT = 0.2; // part of the front layer cut by the panel's bottom edge
+const STEP = 0.45; // vertical offset between layers (visible strip; shows the Λ notch)
+const CUT = 0.22; // part of the front layer cut by the panel's bottom edge
 const LAYERS = 3;
 const stackHeight = 1 + STEP * (LAYERS - 1) - CUT; // in logo heights
+// Top of the letters inside the SVG: the round letters reach y = -65.84 in
+// a viewBox that starts at -67 and is 70 tall.
+const LETTER_TOP = ((67 - 65.84) / 70) * 100; // % of the logo height
+
 const layers = Array.from({ length: LAYERS }, (_, i) => ({
   // i = 0 is the back layer (darkest, highest).
   top: ((i * STEP) / stackHeight) * 100,
@@ -63,42 +67,30 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
 
     <div
       class="stack mx-3 mt-14 md:mx-4 md:mt-16 lg:mx-5 lg:mt-20"
-      style={`aspect-ratio: ${LOGO_RATIO.toFixed(4)} / ${stackHeight.toFixed(4)}`}
-      data-footer-stack
+      style={`aspect-ratio: ${LOGO_RATIO.toFixed(4)} / ${stackHeight.toFixed(4)}; --letter-top: ${LETTER_TOP.toFixed(3)}%`}
+      data-reveal="edge"
     >
       {layers.map((layer, i) => (
-        <Wordmark
+        <div
           class:list={["layer", `layer--${i}`]}
           style={`top: ${layer.top.toFixed(3)}%; --collapse: ${layer.collapse.toFixed(2)}%`}
-          role={layer.front ? "img" : undefined}
-          aria-label={layer.front ? site.name : undefined}
-          aria-hidden={layer.front ? undefined : "true"}
-        />
+        >
+          <Wordmark
+            class="layer-logo"
+            role={layer.front ? "img" : undefined}
+            aria-label={layer.front ? site.name : undefined}
+            aria-hidden={layer.front ? undefined : "true"}
+          />
+        </div>
       ))}
     </div>
   </div>
 </footer>
 
 <script>
-  // Opens the stacked wordmark (layers separate) the first time the footer
-  // comes into view. Without JS, or with reduced motion, it is shown open.
-  const stack = document.querySelector<HTMLElement>("[data-footer-stack]");
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (stack && !reduce && "IntersectionObserver" in window) {
-    stack.classList.add("is-collapsed");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        // Read layout first so the collapsed state is applied, then open.
-        void stack.offsetHeight;
-        stack.classList.remove("is-collapsed");
-        observer.disconnect();
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(stack);
-  }
+  // Shared scroll reveal (src/scripts/reveal.ts): adds .is-in to the stack
+  // when it comes into view, which opens the layers.
+  import "../scripts/reveal";
 </script>
 
 <style>
@@ -117,45 +109,62 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
 
   .stack {
     position: relative;
-    /* Layer tones, back to front. */
-    --tone-0: #3d3a39;
-    --tone-1: var(--color-fg-subtle);
-    --tone-2: var(--color-on-inverse);
   }
 
-  .stack :global(.layer) {
+  /* Each layer: the official wordmark (unchanged SVG, fill set by CSS) on
+     top of a band in the panel color that starts at the top of its letters
+     and runs past the panel's bottom edge. The band hides everything behind
+     the layer, so of each back layer only the strip above the next one shows
+     (strata), and letter counters show the dark background. */
+  .layer {
     position: absolute;
     left: 0;
-    display: block;
     width: 100%;
-    height: auto;
     transition: transform 700ms var(--ease-out);
   }
 
-  /* The official SVG is used as is; only its fill changes per layer. */
-  .stack :global(.layer--0 path) {
-    fill: var(--tone-0);
+  .layer:not(.layer--0)::before {
+    content: "";
+    position: absolute;
+    inset-inline: -2px;
+    top: var(--letter-top);
+    height: 400%;
+    background-color: var(--color-inverse);
   }
 
-  .stack :global(.layer--1 path) {
-    fill: var(--tone-1);
+  .layer :global(.layer-logo) {
+    position: relative; /* paints above the band */
+    display: block;
+    width: 100%;
+    height: auto;
   }
 
-  .stack :global(.layer--2 path) {
-    fill: var(--tone-2);
+  .layer--0 :global(path) {
+    fill: var(--color-layer-back);
   }
 
-  .stack :global(.layer--1) {
+  .layer--1 :global(path) {
+    fill: var(--color-fg-subtle);
+  }
+
+  .layer--2 :global(path) {
+    fill: var(--color-on-inverse);
+  }
+
+  .layer--1 {
     transition-delay: 60ms;
   }
 
-  .stack.is-collapsed :global(.layer) {
+  /* Before the footer is in view (JS only): stacked into one block. */
+  :global(html.js) .stack:not(.is-in) .layer {
     transform: translateY(var(--collapse));
     transition: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .stack :global(.layer) {
+    .layer,
+    :global(html.js) .stack:not(.is-in) .layer {
+      transform: none;
       transition: none;
     }
   }
