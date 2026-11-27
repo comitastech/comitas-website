@@ -1,0 +1,301 @@
+---
+/**
+ * Button: renders an <a> when `href` is set, otherwise a <button>.
+ *
+ * Interaction (docs/design.md, "Movimento e microinterações"):
+ * - hover / keyboard focus: colors invert in 150ms and a section hatch
+ *   (45°, 1px lines) fades in over 100ms and slides slowly while active;
+ * - pressed: slight scale down;
+ * - disabled: muted colors, no hover, not focusable as a link;
+ * - prefers-reduced-motion: color change only (no slide, no scale, no arrow
+ *   shift).
+ */
+import type { HTMLAttributes } from "astro/types";
+
+type Variant = "primary" | "secondary";
+type Arrow = "right" | "external";
+/** Forces a visual state. Only for documentation pages such as /design. */
+type ForcedState = "hover" | "focus" | "pressed";
+
+type Props = Omit<HTMLAttributes<"a"> & HTMLAttributes<"button">, "type"> & {
+  variant?: Variant;
+  href?: string;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  /** Arrow icon for buttons that lead somewhere else. */
+  arrow?: Arrow;
+  state?: ForcedState;
+};
+
+const {
+  variant = "primary",
+  href,
+  type = "button",
+  disabled = false,
+  arrow,
+  state,
+  class: className,
+  target,
+  rel,
+  ...attrs
+} = Astro.props;
+
+const isLink = href !== undefined;
+const Tag = isLink ? "a" : "button";
+
+const elementAttrs = isLink
+  ? disabled
+    ? // A disabled link has no href, so it is not focusable or followable.
+      { role: "link" as const, "aria-disabled": "true" as const }
+    : {
+        href,
+        target,
+        rel:
+          target === "_blank"
+            ? [rel, "noopener", "noreferrer"].filter(Boolean).join(" ")
+            : rel,
+      }
+  : { type, disabled };
+---
+
+<Tag
+  class:list={["btn", `btn--${variant}`, className]}
+  data-state={state}
+  {...elementAttrs}
+  {...attrs}
+>
+  <span class="btn__label">
+    <slot />
+  </span>
+  {arrow === "right" && (
+    <svg
+      class="btn__arrow btn__arrow--right"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1"
+      aria-hidden="true"
+    >
+      <path d="M1 6h9.5M6.5 2l4 4-4 4" />
+    </svg>
+  )}
+  {arrow === "external" && (
+    <svg
+      class="btn__arrow btn__arrow--external"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1"
+      aria-hidden="true"
+    >
+      <path d="M2.5 9.5l7-7M4 2.5h5.5V8" />
+    </svg>
+  )}
+</Tag>
+
+<style>
+  .btn {
+    /* Per-variant colors, swapped by the interactive states below. */
+    --btn-bg: var(--color-inverse);
+    --btn-fg: var(--color-on-inverse);
+    --btn-border: var(--color-inverse);
+
+    /* Hatch: tile size equals one loop of the slide, so it never jumps. */
+    --hatch-size: 8px;
+    --hatch-opacity: 0.22;
+
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 14px;
+    overflow: hidden;
+    border: 1px solid var(--btn-border);
+    border-radius: var(--radius-button);
+    background-color: var(--btn-bg);
+    color: var(--btn-fg);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition:
+      background-color var(--duration-base) var(--ease-standard),
+      color var(--duration-base) var(--ease-standard),
+      border-color var(--duration-base) var(--ease-standard),
+      transform var(--duration-fast) var(--ease-standard);
+  }
+
+  .btn--secondary {
+    --btn-bg: var(--color-bg);
+    --btn-fg: var(--color-fg);
+    --btn-border: var(--color-border);
+  }
+
+  /* Section hatch (desenho técnico): 45° lines, 1px, painted in currentColor
+     through a mask so it follows the color inversion. */
+  .btn::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset-block: 0;
+    inset-inline-start: calc(var(--hatch-size) * -1);
+    inset-inline-end: 0;
+    background-color: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M0 8L8 0M-1 1L1 -1M7 9L9 7' stroke='%23000' stroke-width='1'/%3E%3C/svg%3E");
+    mask-size: var(--hatch-size) var(--hatch-size);
+    mask-repeat: repeat;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-fast) linear;
+    animation: btn-hatch-slide 900ms linear infinite;
+    animation-play-state: paused;
+  }
+
+  .btn__label {
+    position: relative;
+  }
+
+  .btn__arrow {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    margin-inline-end: -2px;
+    transition: transform var(--duration-base) var(--ease-standard);
+  }
+
+  /* Active states: hover (pointer devices only, avoids sticky hover on
+     touch), keyboard focus (same treatment as hover), pressed. */
+  @media (hover: hover) {
+    .btn:hover:not(:disabled, [aria-disabled="true"]) {
+      --btn-bg: var(--color-bg);
+      --btn-fg: var(--color-fg);
+      --btn-border: var(--color-inverse);
+    }
+
+    .btn--secondary:hover:not(:disabled, [aria-disabled="true"]) {
+      --btn-bg: var(--color-inverse);
+      --btn-fg: var(--color-on-inverse);
+      --btn-border: var(--color-inverse);
+    }
+
+    .btn:hover:not(:disabled, [aria-disabled="true"])::before {
+      opacity: var(--hatch-opacity);
+      animation-play-state: running;
+    }
+
+    .btn:hover:not(:disabled, [aria-disabled="true"]) .btn__arrow--right {
+      transform: translateX(3px);
+    }
+
+    .btn:hover:not(:disabled, [aria-disabled="true"]) .btn__arrow--external {
+      transform: translate(2px, -2px);
+    }
+  }
+
+  .btn:focus-visible,
+  .btn:active:not(:disabled, [aria-disabled="true"]),
+  .btn[data-state] {
+    --btn-bg: var(--color-bg);
+    --btn-fg: var(--color-fg);
+    --btn-border: var(--color-inverse);
+  }
+
+  .btn--secondary:focus-visible,
+  .btn--secondary:active:not(:disabled, [aria-disabled="true"]),
+  .btn--secondary[data-state] {
+    --btn-bg: var(--color-inverse);
+    --btn-fg: var(--color-on-inverse);
+    --btn-border: var(--color-inverse);
+  }
+
+  .btn:focus-visible::before,
+  .btn:active:not(:disabled, [aria-disabled="true"])::before,
+  .btn[data-state]::before {
+    opacity: var(--hatch-opacity);
+    animation-play-state: running;
+  }
+
+  .btn:focus-visible .btn__arrow--right,
+  .btn[data-state] .btn__arrow--right {
+    transform: translateX(3px);
+  }
+
+  .btn:focus-visible .btn__arrow--external,
+  .btn[data-state] .btn__arrow--external {
+    transform: translate(2px, -2px);
+  }
+
+  .btn:focus-visible,
+  .btn[data-state="focus"] {
+    outline: 1px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .btn:active:not(:disabled, [aria-disabled="true"]),
+  .btn[data-state="pressed"] {
+    transform: scale(0.97);
+  }
+
+  /* Disabled: no inversion, no hatch, no pointer feedback. */
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    --btn-bg: var(--color-line);
+    --btn-fg: var(--color-fg-subtle);
+    --btn-border: var(--color-line);
+    cursor: not-allowed;
+  }
+
+  .btn--secondary:disabled,
+  .btn--secondary[aria-disabled="true"] {
+    --btn-bg: var(--color-bg);
+    --btn-border: var(--color-line);
+  }
+
+  @keyframes btn-hatch-slide {
+    to {
+      transform: translateX(var(--hatch-size));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn {
+      transition:
+        background-color var(--duration-base) var(--ease-standard),
+        color var(--duration-base) var(--ease-standard),
+        border-color var(--duration-base) var(--ease-standard);
+    }
+
+    .btn::before {
+      animation: none;
+      transition: none;
+    }
+
+    .btn:active:not(:disabled, [aria-disabled="true"]),
+    .btn[data-state="pressed"],
+    .btn .btn__arrow--right,
+    .btn .btn__arrow--external {
+      transform: none !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .btn {
+      border-color: ButtonText;
+    }
+
+    .btn::before {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,38 @@
+---
+import { Font } from "astro:assets";
+import Footer from "../components/Footer.astro";
+import { site } from "../config/site";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Keeps internal pages (such as /design) out of search engines. */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f9f9f9" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <Font cssVariable="--font-geist" preload />
+    <Font cssVariable="--font-geist-mono" preload />
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

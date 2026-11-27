@@ -1,0 +1,6 @@
+dist/
+.astro/
+node_modules/
+package-lock.json
+# Human-owned prose (copy and design docs) keeps its own formatting.
+*.md
