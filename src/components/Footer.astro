@@ -13,19 +13,39 @@ const year = new Date().getFullYear();
 // Layer geometry, as fractions of the wordmark's height. The official SVG
 // is 467.74 x 70 units (viewBox), so height = width x 70 / 467.74.
 const LOGO_RATIO = 467.74 / 70;
-const STEP = 0.45; // vertical offset between layers (visible strip; shows the Λ notch)
-const CUT = 0.22; // part of the front layer cut by the panel's bottom edge
 const LAYERS = 3;
-const stackHeight = 1 + STEP * (LAYERS - 1) - CUT; // in logo heights
+
+/**
+ * Two geometries, switched by CSS at the lg breakpoint:
+ * - compact (desktop): the stack takes about half of the panel's height.
+ *   The 22% step hides the inner notch of the back layers' Λ (it would
+ *   otherwise show as a tiny wedge), and the front layer shows its top 54%,
+ *   enough to keep its Λ notch.
+ * - tall (small screens): the wordmark is short there, so the strips stay
+ *   larger (45% step) to remain readable.
+ */
+const geometry = (step: number, visibleFront: number) => {
+  const height = step * (LAYERS - 1) + visibleFront; // in logo heights
+  return {
+    "--step": step.toFixed(3),
+    "--stack-h": height.toFixed(4),
+    "--ratio": `${LOGO_RATIO.toFixed(4)} / ${height.toFixed(4)}`,
+  };
+};
+const tall = geometry(0.45, 0.78);
+const compact = geometry(0.22, 0.54);
+const toStyle = (vars: Record<string, string>, suffix = "") =>
+  Object.entries(vars)
+    .map(([k, v]) => `${k}${suffix}: ${v}`)
+    .join("; ");
+
 // Top of the letters inside the SVG: the round letters reach y = -65.84 in
 // a viewBox that starts at -67 and is 70 tall.
 const LETTER_TOP = ((67 - 65.84) / 70) * 100; // % of the logo height
 
+// i = 0 is the back layer (darkest, highest).
 const layers = Array.from({ length: LAYERS }, (_, i) => ({
-  // i = 0 is the back layer (darkest, highest).
-  top: ((i * STEP) / stackHeight) * 100,
-  // Collapsed position: moved down onto the front layer.
-  collapse: (LAYERS - 1 - i) * STEP * 100,
+  i,
   front: i === LAYERS - 1,
 }));
 ---
@@ -66,15 +86,12 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
     </div>
 
     <div
-      class="stack mt-14 md:mt-16 lg:mt-20"
-      style={`aspect-ratio: ${LOGO_RATIO.toFixed(4)} / ${stackHeight.toFixed(4)}; --letter-top: ${LETTER_TOP.toFixed(3)}%`}
+      class="stack mt-14 md:mt-16"
+      style={`${toStyle(tall, "-sm")}; ${toStyle(compact, "-lg")}; --letter-top: ${LETTER_TOP.toFixed(3)}%`}
       data-reveal="edge"
     >
       {layers.map((layer, i) => (
-        <div
-          class:list={["layer", `layer--${i}`]}
-          style={`top: ${layer.top.toFixed(3)}%; --collapse: ${layer.collapse.toFixed(2)}%`}
-        >
+        <div class:list={["layer", `layer--${i}`]} style={`--i: ${layer.i}`}>
           <Wordmark
             class="layer-logo"
             role={layer.front ? "img" : undefined}
@@ -137,6 +154,20 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
     position: relative;
     width: 102%;
     margin-inline-start: -1%;
+    --step: var(--step-sm);
+    --stack-h: var(--stack-h-sm);
+    --ratio: var(--ratio-sm);
+    aspect-ratio: var(--ratio);
+  }
+
+  @media (width >= 64rem) {
+    .stack {
+      --step: var(--step-lg);
+      --stack-h: var(--stack-h-lg);
+      --ratio: var(--ratio-lg);
+      /* More room above, so the stack is about half of the panel. */
+      margin-block-start: clamp(5.5rem, 9vw, 8rem);
+    }
   }
 
   /* Each layer: the official wordmark (unchanged SVG, fill set by CSS) on
@@ -146,6 +177,7 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
      (strata), and letter counters show the dark background. */
   .layer {
     position: absolute;
+    top: calc(var(--i) * var(--step) / var(--stack-h) * 100%);
     left: 0;
     width: 100%;
     transition: transform 700ms var(--ease-out);
@@ -185,7 +217,8 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
 
   /* Before the footer is in view (JS only): stacked into one block. */
   :global(html.js) .stack:not(.is-in) .layer {
-    transform: translateY(var(--collapse));
+    /* Moved down onto the front layer (% of the layer's own height). */
+    transform: translateY(calc((2 - var(--i)) * var(--step) * 100%));
     transition: none;
   }
 
