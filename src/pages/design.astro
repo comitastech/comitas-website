@@ -1,11 +1,15 @@
 ---
 /**
- * Internal review page: tokens, typography, buttons, links and grid.
+ * Internal review page: brand, tokens, typography, buttons, links and grid.
  * Not linked from the site and marked noindex.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import SectionLabel from "../components/SectionLabel.astro";
+import MarkBlack from "../assets/brand/comitas-mark-black.svg";
+import MarkWhite from "../assets/brand/comitas-mark-white.svg";
+import WordmarkBlack from "../assets/brand/comitas-wordmark-black.svg";
+import WordmarkWhite from "../assets/brand/comitas-wordmark-white.svg";
 
 // Hex values mirror src/styles/global.css; they are only used to print the
 // value and its contrast ratio. The swatches themselves read the CSS
@@ -127,15 +131,15 @@ const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
 ---
 
 <BaseLayout title="Fundação visual · Comitas" noindex>
-  <header class="container-page pt-16 pb-(--section-space) lg:pt-24">
+  <header class="container-page pt-12 pb-(--section-space) lg:pt-16">
     <div class="grid-12 gap-y-8">
       <p class="type-label col-span-12 text-fg-muted">
-        Comitas <span class="text-fg-subtle">/</span> Fundação visual
+        Página interna <span class="text-fg-subtle">/</span> Fundação visual
       </p>
       <h1 class="type-h1 col-span-12 lg:col-span-9">Fundação visual</h1>
       <p class="type-body-lg col-span-12 text-fg-muted md:col-span-8 lg:col-span-6">
-        Tokens, tipografia, botões e grid do site, para revisar o acabamento.
-        Página interna: fora do menu e dos buscadores.
+        Marca, tokens, tipografia, botões e grid do site, para revisar o
+        acabamento. Página interna: fora do menu e dos buscadores.
       </p>
       <p class="type-caption col-span-12 text-fg-muted">
         Fonte: docs/design.md (v1) · Passe o mouse ou use Tab nos botões.
@@ -143,11 +147,99 @@ const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
     </div>
   </header>
 
-  <!-- 01 Colors -->
-  <section class="container-page" aria-labelledby="cores">
+  <!-- 01 Brand -->
+  <section class="container-page" aria-labelledby="marca">
     <div class="section-space grid-12 gap-y-10 border-t border-line">
       <div class="col-span-12 lg:col-span-3">
         <SectionLabel index={1}>
+          <span id="marca">Marca</span>
+        </SectionLabel>
+        <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
+          Arquivos aprovados, usados como estão (src/assets/brand). Respiro
+          mínimo em volta da logo: a largura do Λ.
+        </p>
+      </div>
+      <div class="col-span-12 flex flex-col gap-(--gutter) lg:col-span-9">
+        <div class="grid grid-cols-1 gap-(--gutter) md:grid-cols-2">
+          <figure class="flex flex-col gap-3">
+            <div class="flex aspect-[16/9] items-center justify-center rounded-panel border border-line">
+              <div class="clear-space">
+                <WordmarkBlack
+                  class="block h-10 w-auto"
+                  role="img"
+                  aria-label="Comitas"
+                />
+              </div>
+            </div>
+            <figcaption class="type-caption text-fg-muted">
+              comitas-wordmark-black.svg · fundo claro · linha tracejada =
+              respiro
+            </figcaption>
+          </figure>
+          <figure class="flex flex-col gap-3">
+            <div class="flex aspect-[16/9] items-center justify-center rounded-panel bg-inverse">
+              <WordmarkWhite
+                class="block h-10 w-auto"
+                role="img"
+                aria-label="Comitas"
+              />
+            </div>
+            <figcaption class="type-caption text-fg-muted">
+              comitas-wordmark-white.svg · fundo escuro
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="grid grid-cols-2 gap-(--gutter) md:grid-cols-4">
+          <figure class="flex flex-col gap-3">
+            <div class="flex aspect-square items-center justify-center rounded-panel border border-line">
+              <MarkBlack class="block size-12" role="img" aria-label="Λ" />
+            </div>
+            <figcaption class="type-caption text-fg-muted">
+              comitas-mark-black.svg
+            </figcaption>
+          </figure>
+          <figure class="flex flex-col gap-3">
+            <div class="flex aspect-square items-center justify-center rounded-panel bg-inverse">
+              <MarkWhite class="block size-12" role="img" aria-label="Λ" />
+            </div>
+            <figcaption class="type-caption text-fg-muted">
+              comitas-mark-white.svg
+            </figcaption>
+          </figure>
+          <figure class="col-span-2 flex flex-col gap-3">
+            <div class="flex aspect-[2/1] items-end justify-center gap-6 rounded-panel border border-line pb-[18%] md:aspect-auto md:h-full md:items-center md:pb-0">
+              {[
+                { src: "/icon-512.png", size: 96 },
+                { src: "/apple-touch-icon.png", size: 60 },
+                { src: "/favicon.svg", size: 32 },
+                { src: "/favicon.svg", size: 16 },
+              ].map((icon) => (
+                <img
+                  src={icon.src}
+                  width={icon.size}
+                  height={icon.size}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              ))}
+            </div>
+            <figcaption class="type-caption text-fg-muted">
+              Ícones: 512, 180 (apple-touch, cantos cheios: o iOS arredonda), 32
+              e 16px · gerados de comitas-icon-square-dark.svg
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 Colors -->
+  <section class="container-page" aria-labelledby="cores">
+    <div class="section-space grid-12 gap-y-10 border-t border-line">
+      <div class="col-span-12 lg:col-span-3">
+        <SectionLabel index={2}>
           <span id="cores">Cores</span>
         </SectionLabel>
       </div>
@@ -241,11 +333,11 @@ const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
     </div>
   </section>
 
-  <!-- 02 Typography -->
+  <!-- 03 Typography -->
   <section class="container-page" aria-labelledby="tipografia">
     <div class="section-space grid-12 gap-y-10 border-t border-line">
       <div class="col-span-12 lg:col-span-3">
-        <SectionLabel index={2}>
+        <SectionLabel index={3}>
           <span id="tipografia">Tipografia</span>
         </SectionLabel>
         <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
@@ -278,11 +370,11 @@ const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
     </div>
   </section>
 
-  <!-- 03 Buttons -->
+  <!-- 04 Buttons -->
   <section class="container-page" aria-labelledby="botoes">
     <div class="section-space grid-12 gap-y-10 border-t border-line">
       <div class="col-span-12 lg:col-span-3">
-        <SectionLabel index={3}>
+        <SectionLabel index={4}>
           <span id="botoes">Botões</span>
         </SectionLabel>
         <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
@@ -375,11 +467,11 @@ const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
     </div>
   </section>
 
-  <!-- 04 Links -->
+  <!-- 05 Links -->
   <section class="container-page" aria-labelledby="links">
     <div class="section-space grid-12 gap-y-10 border-t border-line">
       <div class="col-span-12 lg:col-span-3">
-        <SectionLabel index={4}>
+        <SectionLabel index={5}>
           <span id="links">Links</span>
         </SectionLabel>
         <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
@@ -403,11 +495,11 @@ const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
     </div>
   </section>
 
-  <!-- 05 Grid -->
+  <!-- 06 Grid -->
   <section class="container-page" aria-labelledby="grid">
     <div class="section-space grid-12 gap-y-10 border-t border-line">
       <div class="col-span-12 lg:col-span-3">
-        <SectionLabel index={5}>
+        <SectionLabel index={6}>
           <span id="grid">Grid e espaço</span>
         </SectionLabel>
         <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
@@ -490,6 +582,15 @@ const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
 </script>
 
 <style>
+  /* Clear space: at least the width of the Λ, which is 0.92 × the height of
+     the wordmark box (Λ is 64.6 units wide in a 70-unit-tall viewBox). */
+  .clear-space {
+    --logo-height: 2.5rem;
+    padding: calc(var(--logo-height) * 0.92);
+    outline: 1px dashed var(--color-border);
+    outline-offset: -1px;
+  }
+
   /* Selected accent option keeps the inverted look. */
   [data-accent-switcher] :global(.btn[aria-pressed="true"]) {
     --btn-bg: var(--color-inverse);
