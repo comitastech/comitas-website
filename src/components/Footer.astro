@@ -17,10 +17,11 @@ const LAYERS = 3;
 
 /**
  * Two geometries, switched by CSS at the lg breakpoint:
- * - compact (desktop): the stack takes about half of the panel's height.
- *   The 22% step hides the inner notch of the back layers' Λ (it would
- *   otherwise show as a tiny wedge), and the front layer shows its top 54%,
- *   enough to keep its Λ notch.
+ * - compact (desktop): the stack takes about 55-60% of the panel's height.
+ *   The 30% step keeps the back strips suggestive of the letters while
+ *   hiding the inner notch of the back layers' Λ (it starts at 38% of the
+ *   letter height and would otherwise show as a tiny wedge); the front layer
+ *   shows its top two thirds, so "COMITAS" reads at once.
  * - tall (small screens): the wordmark is short there, so the strips stay
  *   larger (45% step) to remain readable.
  */
@@ -33,7 +34,7 @@ const geometry = (step: number, visibleFront: number) => {
   };
 };
 const tall = geometry(0.45, 0.78);
-const compact = geometry(0.22, 0.54);
+const compact = geometry(0.3, 0.67);
 const toStyle = (vars: Record<string, string>, suffix = "") =>
   Object.entries(vars)
     .map(([k, v]) => `${k}${suffix}: ${v}`)
