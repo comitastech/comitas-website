@@ -1,0 +1,20 @@
+// Cloudflare Workers configuration: static site, no server code.
+// Workers Builds runs `npm run build`, then `npx wrangler deploy` for `main`
+// and `npx wrangler preview` for other branches (one Preview URL per branch).
+// https://developers.cloudflare.com/workers/static-assets/
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "comitas-website",
+  "compatibility_date": "2026-11-27",
+  "assets": {
+    "directory": "./dist",
+    // /design -> /design/ (matches Astro's directory output).
+    "html_handling": "auto-trailing-slash",
+    // Serves dist/404.html once the site has one; plain 404 until then.
+    "not_found_handling": "404-page",
+  },
+  // Required by `wrangler preview`. Empty: previews use the top-level
+  // settings above (the site has no bindings or variables).
+  // https://developers.cloudflare.com/workers/previews/configuration/
+  "previews": {},
+}
