@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import HeroIllustration from "../components/HeroIllustration.astro";
+import { contactHref, contactIsExternal } from "../config/site";
+
+// Copy: docs/copy.md, "1. Topo".
+const title = "Do mesmo lado da mesa.";
+const lead =
+  "Construímos sistemas, automações e agentes de IA junto com quem toca o negócio.";
+---
+
+<BaseLayout title={`Comitas · ${title}`} description={lead}>
+  <section class="container-page" aria-labelledby="hero-title">
+    <div class="grid-12 items-center gap-y-14 pt-10 pb-(--section-space) lg:min-h-[calc(100svh-5rem)] lg:pt-0">
+      <div class="col-span-12 flex flex-col items-start md:col-span-9 lg:col-span-5">
+        <h1 id="hero-title" class="type-h1">
+          {title}
+        </h1>
+        <p class="type-body-lg mt-6 max-w-[34ch] text-fg-muted">{lead}</p>
+        <Button
+          class="mt-10"
+          href={contactHref}
+          arrow={contactIsExternal ? "external" : "right"}
+          target={contactIsExternal ? "_blank" : undefined}
+        >
+          Conversar no WhatsApp
+        </Button>
+      </div>
+      <div class="col-span-12 sm:col-span-10 sm:col-start-2 md:col-span-8 md:col-start-3 lg:col-span-6 lg:col-start-7">
+        <HeroIllustration />
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -18,3 +18,12 @@ export const site = {
     { label: "Projetos", href: "/#projetos" },
   ],
 } as const;
+
+/**
+ * Where "talk to us" buttons point: the WhatsApp link once it exists,
+ * otherwise the contact anchor on the home page (no made-up number).
+ */
+export const contactHref: string = site.whatsappUrl ?? "/#contato";
+
+/** Whether contactHref leaves the site (opens WhatsApp). */
+export const contactIsExternal = Boolean(site.whatsappUrl);
