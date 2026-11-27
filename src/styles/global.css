@@ -51,6 +51,13 @@
    * Fluid between a 375px and a 1440px viewport. */
   --text-*: initial;
 
+  /* Hero title only: one step above H1 (about +18% on desktop). Sized so
+     "LADO DA MESA." fits the hero's text column at every breakpoint. */
+  --text-display: clamp(2.375rem, 0.5rem + 4.5vw, 4.125rem); /* 38 → 66px */
+  --text-display--line-height: 0.98;
+  --text-display--letter-spacing: -0.045em;
+  --text-display--font-weight: 500;
+
   --text-h1: clamp(2.25rem, 1.6rem + 2.2vw, 3.5rem); /* 36 → 56px */
   --text-h1--line-height: 1;
   --text-h1--letter-spacing: -0.04em;
@@ -176,6 +183,15 @@
 }
 
 /* Typography roles -------------------------------------------------------- */
+
+@utility type-display {
+  font-family: var(--font-sans);
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+  font-weight: var(--text-display--font-weight);
+  text-transform: uppercase;
+}
 
 @utility type-h1 {
   font-family: var(--font-sans);

@@ -10,7 +10,9 @@ import { site } from "../config/site";
 const year = new Date().getFullYear();
 ---
 
-<footer class="footer container-page pb-(--page-margin)">
+<!-- id="contato": temporary target of the contact buttons; it moves to the
+     final call-to-action section when that section is built. -->
+<footer id="contato" class="footer container-page pb-(--page-margin)">
   <div class="flex min-h-[22rem] flex-col justify-between gap-16 rounded-panel bg-inverse p-6 text-on-inverse md:min-h-[26rem] md:p-8 lg:p-10">
     <nav aria-label="Rodapé" class="grid-12">
       <ul class="col-span-12 flex flex-col gap-4 md:col-span-4 md:col-start-9 lg:col-span-3 lg:col-start-10">
