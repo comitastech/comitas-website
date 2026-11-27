@@ -338,16 +338,17 @@ const dimension = {
   textY: (cornerLow[1] + cornerHigh[1]) / 2,
 };
 
-// View box: plates plus room for the labels on both sides. Label widths are
-// estimated for the mobile font size (the larger one).
+// View box: plates plus room for the labels on both sides, sized for the
+// desktop labels. On small screens only the numbers stay in the drawing
+// (larger), and the names move to a legend under the figure.
 const MONO_EM = 0.6;
-const MOBILE_FONT = 20;
+const DESKTOP_FONT = 13; // keep in sync with .fig-text
 const labelWidth = (l: (typeof leaders)[number]) =>
-  (l.number.length + 1 + l.label.length) * MOBILE_FONT * MONO_EM;
+  (l.number.length + 1 + l.label.length) * DESKTOP_FONT * MONO_EM;
 const xs = [
   project(0, S, 0)[0],
   project(S, 0, 0)[0],
-  dimension.textX + 3 * MOBILE_FONT * MONO_EM,
+  dimension.textX + 3 * DESKTOP_FONT * MONO_EM,
   ...leaders.map((l) =>
     l.anchor === "end" ? l.textX - labelWidth(l) : l.textX + labelWidth(l),
   ),
@@ -469,13 +470,27 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
               dominant-baseline="central"
             >
               <tspan class="fig-text--muted">{leader.number}</tspan>
-              <tspan dx="0.6em">{leader.label.toUpperCase()}</tspan>
+              <tspan class="fig-label-name" dx="0.6em">
+                {leader.label.toUpperCase()}
+              </tspan>
             </text>
           </>
         ))}
       </g>
     </svg>
   </div>
+  <ol
+    class="type-caption mt-4 grid grid-cols-2 gap-x-(--gutter) gap-y-1 md:hidden"
+    aria-hidden="true"
+  >
+    {[...leaders]
+      .sort((a, b) => a.number.localeCompare(b.number))
+      .map((l) => (
+        <li>
+          <span class="text-fg-muted">{l.number}</span> {l.label}
+        </li>
+      ))}
+  </ol>
   <figcaption class="type-caption mt-4 flex justify-between gap-4 text-fg-muted">
     <span>FIG_ 01 [ sistema ]</span>
     <span>vista explodida</span>
@@ -488,7 +503,7 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
   .sheet {
     position: relative;
     isolation: isolate;
-    padding: clamp(12px, 3vw, 32px);
+    padding: clamp(8px, 2vw, 20px);
   }
 
   .sheet::before {
@@ -629,9 +644,15 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
 
   /* The figure scales down; text sizes are in drawing units, chosen so the
      labels render at about 10-11px on desktop and on a 375px screen. */
+  /* Small screens: numbers only, large enough to read (~12px); the names
+     are in the legend under the figure. */
   @media (width < 48rem) {
     .fig-text {
-      font-size: 20px; /* keep in sync with MOBILE_FONT */
+      font-size: 26px;
+    }
+
+    .fig-label-name {
+      display: none;
     }
   }
 
