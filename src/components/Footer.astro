@@ -4,6 +4,7 @@
  * page container. Wordmark at the bottom left; links and legal line on the
  * right (docs/design.md, "Layout").
  */
+import Wordmark from "../assets/brand/comitas-wordmark-white.svg";
 import { site } from "../config/site";
 
 const year = new Date().getFullYear();
@@ -35,12 +36,18 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
 
-    <div class="grid-12 items-end gap-y-10">
-      <p class="wordmark col-span-12 font-medium uppercase select-none lg:col-span-8">
-        {site.name}
+    <!-- The empty column between logo and legal line keeps the brand's clear
+         space (at least the width of the Λ) on desktop. -->
+    <div class="grid-12 items-end gap-y-12">
+      <p class="col-span-12 lg:col-span-7">
+        <Wordmark
+          class="block h-auto w-full"
+          role="img"
+          aria-label={site.name}
+        />
       </p>
       <!-- Two deliberate lines on desktop; one flowing line on small screens. -->
-      <p class="type-caption col-span-12 text-on-inverse-muted lg:col-span-4 lg:flex lg:flex-col lg:items-end lg:gap-1">
+      <p class="type-caption col-span-12 text-on-inverse-muted lg:col-span-4 lg:col-start-9 lg:flex lg:flex-col lg:items-end lg:gap-1">
         <span>
           © {year} {site.name}. Todos os direitos reservados.
         </span>
@@ -72,15 +79,6 @@ const year = new Date().getFullYear();
 <style>
   .footer {
     --focus-ring: var(--color-on-inverse);
-  }
-
-  .wordmark {
-    font-size: clamp(3.5rem, 14vw, 12.5rem);
-    line-height: 0.74;
-    letter-spacing: -0.055em;
-    /* Optical alignment: the cap height sits on the panel's bottom padding. */
-    margin-block-end: -0.02em;
-    margin-inline-start: -0.04em;
   }
 
   .footer ::selection {
