@@ -1,0 +1,90 @@
+---
+/**
+ * Floating footer: a dark panel inset from the page edges, aligned with the
+ * page container. Wordmark at the bottom left; links and legal line on the
+ * right (docs/design.md, "Layout").
+ */
+import { site } from "../config/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer container-page pb-(--page-margin)">
+  <div class="flex min-h-[22rem] flex-col justify-between gap-16 rounded-panel bg-inverse p-6 text-on-inverse md:min-h-[26rem] md:p-8 lg:p-10">
+    <nav aria-label="Rodapé" class="grid-12">
+      <ul class="col-span-12 flex flex-col gap-4 md:col-span-4 md:col-start-9 lg:col-span-3 lg:col-start-10">
+        {site.nav.map((item) => (
+          <li>
+            <a class="type-label link" href={item.href}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+        {site.whatsappUrl && (
+          <li>
+            <a
+              class="type-label link"
+              href={site.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp
+            </a>
+          </li>
+        )}
+      </ul>
+    </nav>
+
+    <div class="grid-12 items-end gap-y-10">
+      <p class="wordmark col-span-12 font-medium uppercase select-none lg:col-span-8">
+        {site.name}
+      </p>
+      <!-- Two deliberate lines on desktop; one flowing line on small screens. -->
+      <p class="type-caption col-span-12 text-on-inverse-muted lg:col-span-4 lg:flex lg:flex-col lg:items-end lg:gap-1">
+        <span>
+          © {year} {site.name}. Todos os direitos reservados.
+        </span>
+        <span aria-hidden="true" class="lg:hidden">
+          {" "}
+          ·{" "}
+        </span>
+        <span class="whitespace-nowrap">
+          {site.country}
+          <span aria-hidden="true"> · </span>
+          {site.whatsappUrl ? (
+            <a
+              class="link text-on-inverse"
+              href={site.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp
+            </a>
+          ) : (
+            "WhatsApp"
+          )}
+        </span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    --focus-ring: var(--color-on-inverse);
+  }
+
+  .wordmark {
+    font-size: clamp(3.5rem, 14vw, 12.5rem);
+    line-height: 0.74;
+    letter-spacing: -0.055em;
+    /* Optical alignment: the cap height sits on the panel's bottom padding. */
+    margin-block-end: -0.02em;
+    margin-inline-start: -0.04em;
+  }
+
+  .footer ::selection {
+    background-color: var(--color-on-inverse);
+    color: var(--color-inverse);
+  }
+</style>

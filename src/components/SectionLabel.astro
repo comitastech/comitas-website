@@ -1,0 +1,26 @@
+---
+/**
+ * Section label in the `[ 01 ] COMO TRABALHAMOS` format (docs/design.md).
+ */
+interface Props {
+  index: number;
+  class?: string;
+}
+
+const { index, class: className } = Astro.props;
+const number = String(index).padStart(2, "0");
+---
+
+<p class:list={["type-label text-fg-muted", className]}>
+  <span class="text-fg-subtle" aria-hidden="true">
+    [{" "}
+  </span>
+  {number}
+  <span class="text-fg-subtle" aria-hidden="true">
+    {" "}
+    ]
+  </span>
+  <span class="ms-2 text-fg">
+    <slot />
+  </span>
+</p>
