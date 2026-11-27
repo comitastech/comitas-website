@@ -1,0 +1,111 @@
+/*
+ * Technical drawing styles shared by the step figures (FIG_ 02+).
+ * 1px lines at any size, fg outlines, light gray sides, one accent per
+ * section at most.
+ */
+.drw {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.drw path,
+.drw circle,
+.drw line {
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.drw-top {
+  fill: var(--color-surface);
+  stroke: var(--color-fg);
+  stroke-width: 1;
+}
+
+.drw-left {
+  fill: var(--color-line);
+  stroke: var(--color-fg);
+  stroke-width: 1;
+}
+
+.drw-right {
+  fill: color-mix(in srgb, var(--color-border) 45%, var(--color-bg));
+  stroke: var(--color-fg);
+  stroke-width: 1;
+}
+
+.drw-edge {
+  fill: none;
+  stroke: var(--color-fg);
+  stroke-width: 1;
+}
+
+.drw-line {
+  fill: none;
+  stroke: var(--color-fg-muted);
+  stroke-width: 1;
+}
+
+.drw-shade {
+  fill: var(--color-line);
+  stroke: none;
+}
+
+.drw-fill-muted {
+  fill: var(--color-fg-muted);
+  stroke: none;
+}
+
+.drw-guide {
+  fill: none;
+  stroke: var(--color-fg-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.drw-accent {
+  fill: var(--color-accent);
+  stroke: none;
+}
+
+.drw-accent-line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1;
+}
+
+.drw-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: -0.02em;
+  fill: var(--color-fg-muted);
+}
+
+/*
+ * Scroll reveal. Only active when JavaScript runs (html.js); without it,
+ * everything is visible. Elements marked .rv inside a [data-reveal]
+ * container fade and rise into place, staggered by --rv-i.
+ */
+html.js [data-reveal] .rv {
+  opacity: 0;
+  transform: translateY(var(--rv-y, 10px));
+  transition:
+    opacity 500ms var(--ease-out),
+    transform 600ms var(--ease-out);
+  transition-delay: calc(var(--rv-i, 0) * 90ms);
+}
+
+html.js [data-reveal].is-in .rv {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal] .rv {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

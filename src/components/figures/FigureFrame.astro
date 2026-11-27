@@ -1,0 +1,94 @@
+---
+/**
+ * Frame for the small technical figures: crop marks, faint dot grid and a
+ * `FIG_ nn [ name ]` caption in mono.
+ */
+import "../../styles/drawing.css";
+
+interface Props {
+  number: number;
+  name: string;
+  class?: string;
+}
+
+const { number, name, class: className } = Astro.props;
+const label = `FIG_ ${String(number).padStart(2, "0")} [ ${name} ]`;
+---
+
+<figure class:list={["figure-frame", className]}>
+  <div class="frame">
+    <span class="corner corner--tl" aria-hidden="true"></span>
+    <span class="corner corner--tr" aria-hidden="true"></span>
+    <span class="corner corner--bl" aria-hidden="true"></span>
+    <span class="corner corner--br" aria-hidden="true"></span>
+    <slot />
+  </div>
+  <figcaption class="type-caption mt-3 text-fg-muted">{label}</figcaption>
+</figure>
+
+<style>
+  .frame {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 3;
+    padding: 14px;
+  }
+
+  .frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-fg) 18%, transparent) 0.75px,
+      transparent 1px
+    );
+    background-size: 14px 14px;
+    background-position: center;
+    mask-image: radial-gradient(closest-side, #000 50%, transparent);
+    pointer-events: none;
+  }
+
+  .frame :global(.drw) {
+    max-height: 100%;
+  }
+
+  .corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 0 solid var(--color-fg-subtle);
+  }
+
+  .corner--tl {
+    top: 0;
+    left: 0;
+    border-top-width: 1px;
+    border-left-width: 1px;
+  }
+
+  .corner--tr {
+    top: 0;
+    right: 0;
+    border-top-width: 1px;
+    border-right-width: 1px;
+  }
+
+  .corner--bl {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+  }
+
+  .corner--br {
+    right: 0;
+    bottom: 0;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+</style>
