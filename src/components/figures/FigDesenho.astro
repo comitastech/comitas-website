@@ -1,0 +1,141 @@
+---
+/**
+ * FIG_ 03 [ desenho ]: a written agreement on the table. A short list in
+ * priority order (the first item highlighted and checked), two signatures
+ * and a pencil. "Decidimos juntos o que vem primeiro e deixamos tudo
+ * combinado por escrito."
+ */
+import { createIso } from "../../lib/iso";
+
+const k = createIso();
+
+const table = k.box(0, 0, -6, 172, 158, 6);
+
+// Sheet of paper with a soft offset shadow.
+const PZ = 0.6;
+const shadow = k.rect(25, 17, 127, 147, 0.1);
+const sheet = k.rect(22, 14, 124, 144, PZ);
+
+// Title block.
+const title = k.rect(32, 24, 78, 31, PZ);
+
+// List: three items, first one is "what comes first".
+const rows = [46, 64, 82];
+const highlight = k.rect(28, 39, 118, 55, PZ);
+const items = rows.flatMap((y, i) => [
+  k.rect(32, y - 4, 40, y + 4, PZ),
+  k.seg(46, y - 2, 112 - i * 12, y - 2, PZ),
+  k.seg(46, y + 3, 90 - i * 6, y + 3, PZ),
+]);
+const check = k.poly(
+  [
+    [33, 46],
+    [36, 49.5],
+    [41, 41],
+  ],
+  PZ,
+);
+
+// Divider and two signatures ("combinado por escrito").
+const divider = k.seg(32, 100, 114, 100, PZ);
+const signature = (x0: number, x1: number, phase: number) => {
+  const n = 28;
+  const scribble = k.open(
+    Array.from({ length: n + 1 }, (_, i) => {
+      const t = i / n;
+      const x = x0 + (x1 - x0) * t;
+      const y =
+        121 -
+        4 * Math.sin(t * Math.PI * 3 + phase) * Math.sin(t * Math.PI) -
+        1.5 * Math.sin(t * Math.PI * 9 + phase);
+      return k.project(x, y, PZ);
+    }),
+  );
+  return { scribble, line: k.seg(x0 - 2, 126, x1 + 2, 126, PZ) };
+};
+const signatures = [signature(34, 68, 0), signature(82, 114, 1.4)];
+
+// Pencil lying along y, to the right of the sheet.
+const PX = 144,
+  PW = 9,
+  P0 = 22,
+  P1 = 118;
+const pencil = k.box(PX, P0, 0, PW, P1 - P0, PW);
+const ferrule = [
+  k.seg(PX, P0 + 10, PX + PW, P0 + 10, PW),
+  k.open([k.project(PX + PW, P0 + 10, PW), k.project(PX + PW, P0 + 10, 0)]),
+];
+const eraser = k.rect(PX, P0, PX + PW, P0 + 10, PW);
+const apex = k.project(PX + PW / 2, P1 + 16, PW / 2);
+const tipTop = k.closed([
+  k.project(PX, P1, PW),
+  k.project(PX + PW, P1, PW),
+  apex,
+]);
+const tipSide = k.closed([
+  k.project(PX + PW, P1, PW),
+  k.project(PX + PW, P1, 0),
+  apex,
+]);
+const tipFront = k.closed([
+  k.project(PX, P1, PW),
+  k.project(PX, P1, 0),
+  k.project(PX + PW, P1, 0),
+  apex,
+]);
+const lead = k.closed([
+  k.project(PX + PW / 2 - 1.6, P1 + 11, PW / 2 + 1),
+  k.project(PX + PW / 2 + 1.6, P1 + 11, PW / 2 + 1),
+  apex,
+]);
+
+const viewBox = k.viewBox(6);
+---
+
+<svg
+  class="drw"
+  viewBox={viewBox}
+  role="img"
+  aria-label="Folha sobre a mesa com uma lista em ordem de prioridade, o primeiro item marcado, duas assinaturas e um lápis ao lado."
+>
+  <g class="rv" style="--rv-i: 0">
+    <path class="drw-left" d={table.left} />
+    <path class="drw-right" d={table.right} />
+    <path class="drw-top" d={table.top} />
+  </g>
+  <g class="rv" style="--rv-i: 1">
+    <path class="drw-shade" d={shadow} />
+    <path class="drw-top" d={sheet} />
+    <path class="drw-shade" d={title} />
+    <path class="drw-shade" d={highlight} />
+    {items.map((d) => (
+      <path class="drw-line" d={d} />
+    ))}
+    <path class="drw-line" d={divider} />
+  </g>
+  <g class="rv" style="--rv-i: 3; --rv-y: 4px">
+    <path class="drw-edge" d={check} />
+  </g>
+  <g class="rv" style="--rv-i: 4; --rv-y: 4px">
+    {signatures.map((s) => (
+      <>
+        <path class="drw-guide" d={s.line} />
+        <path class="drw-edge" d={s.scribble} />
+      </>
+    ))}
+  </g>
+  <g class="rv" style="--rv-i: 2; --rv-y: 14px">
+    <path class="drw-left" d={tipFront} />
+    <path class="drw-left" d={pencil.left} />
+    <path class="drw-right" d={pencil.right} />
+    <path class="drw-top" d={pencil.top} />
+    <path class="drw-shade" d={eraser} />
+    <path class="drw-line" d={eraser} />
+    {ferrule.map((d) => (
+      <path class="drw-line" d={d} />
+    ))}
+    <path class="drw-right" d={tipSide} />
+    <path class="drw-top" d={tipTop} />
+    <path class="drw-fill-muted" d={lead} />
+  </g>
+</svg>

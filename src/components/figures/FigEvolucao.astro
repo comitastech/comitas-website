@@ -1,0 +1,95 @@
+---
+/**
+ * FIG_ 05 [ evolução ]: the same system in three versions, growing floor by
+ * floor as the business grows; the latest one is live (the section's single
+ * accent). "Depois que entra no ar, o sistema acompanha o negócio."
+ */
+import { createIso, type Point } from "../../lib/iso";
+
+const k = createIso();
+
+const W = 40; // tower footprint
+const FLOOR = 20;
+const PITCH = 58; // distance between towers along x
+const Y0 = 14;
+const base = k.box(0, 0, -6, PITCH * 2 + W + 24, W + Y0 * 2, 6);
+
+const towers = [1, 2, 3].map((floors, i) => {
+  const x = 12 + i * PITCH;
+  return {
+    floors: Array.from({ length: floors }, (_, f) =>
+      k.box(x, Y0, f * FLOOR, W, W, FLOOR),
+    ),
+    // Version label under the base's front edge.
+    label: `v${i + 1}`,
+    labelAt: k.include(
+      (([px, py]): Point => [px - 6, py + 16])(
+        k.project(x + W, Y0 + W + 14, -6),
+      ),
+    ),
+    height: floors * FLOOR,
+    x,
+  };
+});
+
+// Live mark on the latest version: a mast with a dot and signal arcs.
+const last = towers[towers.length - 1];
+const mastBase = k.project(last.x + W / 2, Y0 + W / 2, last.height);
+const mastTop = k.project(last.x + W / 2, Y0 + W / 2, last.height + 20);
+const mast = k.open([mastBase, mastTop]);
+const signal = [8, 13].flatMap((r) =>
+  [-1, 1].map((side) => {
+    const a0 = (side > 0 ? -38 : 180 - 38) * (Math.PI / 180);
+    const a1 = (side > 0 ? 38 : 180 + 38) * (Math.PI / 180);
+    const pts: Point[] = Array.from({ length: 9 }, (_, i) => {
+      const t = a0 + ((a1 - a0) * i) / 8;
+      return k.include([
+        mastTop[0] + r * Math.cos(t),
+        mastTop[1] + r * Math.sin(t),
+      ]);
+    });
+    return k.open(pts);
+  }),
+);
+
+const viewBox = k.viewBox(8);
+---
+
+<svg
+  class="drw"
+  viewBox={viewBox}
+  role="img"
+  aria-label="O mesmo sistema em três versões, crescendo andar por andar; a última está no ar."
+>
+  <g class="rv" style="--rv-i: 0">
+    <path class="drw-left" d={base.left} />
+    <path class="drw-right" d={base.right} />
+    <path class="drw-top" d={base.top} />
+    {towers.map((t) => (
+      <text
+        class="drw-text"
+        x={t.labelAt[0]}
+        y={t.labelAt[1]}
+        text-anchor="middle"
+      >
+        {t.label}
+      </text>
+    ))}
+  </g>
+  {towers.map((t, i) =>
+    t.floors.map((f, j) => (
+      <g class="rv" style={`--rv-i: ${i + j + 1}; --rv-y: 12px`}>
+        <path class="drw-left" d={f.left} />
+        <path class="drw-right" d={f.right} />
+        <path class="drw-top" d={f.top} />
+      </g>
+    )),
+  )}
+  <g class="rv" style="--rv-i: 5; --rv-y: 6px">
+    <path class="drw-edge" d={mast} />
+    {signal.map((d) => (
+      <path class="drw-accent-line" d={d} />
+    ))}
+    <circle class="drw-accent" cx={mastTop[0]} cy={mastTop[1]} r="3.5" />
+  </g>
+</svg>

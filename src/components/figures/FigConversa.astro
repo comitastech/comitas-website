@@ -1,0 +1,150 @@
+---
+/**
+ * FIG_ 02 [ conversa ]: a phone standing on the table, facing us, with the
+ * conversation on its screen (a message, a reply, a voice note, someone
+ * typing), next to a cup of coffee.
+ * "Você explica a ideia do jeito que ela está hoje."
+ */
+import { createIso, type Point } from "../../lib/iso";
+
+const k = createIso();
+
+// Table top.
+const table = k.box(0, 0, -6, 150, 120, 6);
+
+// Phone standing at (PX, PY), screen facing the viewer.
+// a: across the screen (left -> right), b: up.
+const PX = 58,
+  PY = 52;
+const HW = 32; // half width
+const PH = 124; // height
+const T = 7; // thickness (seen as the top band)
+const front = (a: number, b: number) => k.upright(PX, PY, 0, a, b);
+// Behind the front plane: (-1, -1) / √2 in plan, i.e. straight up on screen.
+const back = (a: number, b: number): Point =>
+  k.project(
+    PX + a / Math.SQRT2 - T / Math.SQRT2,
+    PY - a / Math.SQRT2 - T / Math.SQRT2,
+    b,
+  );
+const phoneFront = k.closed([
+  front(-HW, 0),
+  front(HW, 0),
+  front(HW, PH),
+  front(-HW, PH),
+]);
+const phoneTop = k.closed([
+  front(-HW, PH),
+  front(HW, PH),
+  back(HW, PH),
+  back(-HW, PH),
+]);
+const screen = k.closed([
+  front(-HW + 4, 10),
+  front(HW - 4, 10),
+  front(HW - 4, PH - 12),
+  front(-HW + 4, PH - 12),
+]);
+const speaker = k.open([front(-6, PH - 6), front(6, PH - 6)]);
+
+/** Rectangle on the screen, in screen coordinates (a0..a1, b0..b1). */
+const box = (a0: number, a1: number, b0: number, b1: number) =>
+  k.closed([front(a0, b0), front(a1, b0), front(a1, b1), front(a0, b1)]);
+
+// Messages, top to bottom.
+const L = -HW + 8; // incoming bubbles start
+const Rr = HW - 8; // outgoing bubbles end
+const incoming = box(L, 8, 92, 102);
+const reply = box(-6, Rr, 78, 88);
+const voice = box(L, 14, 56, 72);
+const play = k.closed([front(L + 4, 60), front(L + 4, 68), front(L + 10, 64)]);
+const wave = [3, 7, 10, 6, 9, 12, 8, 5, 9, 6, 4, 7].map((h, i) => {
+  const a = L + 14 + i * 2.4;
+  return k.open([front(a, 64 - h / 2), front(a, 64 + h / 2)]);
+});
+const reply2 = box(2, Rr, 38, 50);
+const typing = box(L, L + 18, 22, 32);
+const dots = [L + 5, L + 9, L + 13].map((a) => {
+  const [x, y] = front(a, 27);
+  return { x, y };
+});
+
+// Cup of coffee on the table, to the right of the phone, with a handle and steam.
+const CX = 122,
+  CY = 42,
+  R = 13,
+  H = 22;
+const cup = k.cylinder(CX, CY, 0, R, H);
+const coffee = k.circle(CX, CY, R - 3, H, 40);
+const handle = (() => {
+  const p0 = k.upright(CX, CY, 0, R - 1, 17);
+  const c = k.upright(CX, CY, 0, R + 12, 12);
+  const p1 = k.upright(CX, CY, 0, R - 1, 6);
+  return `M${k.pt(p0)}Q${k.pt(c)} ${k.pt(p1)}`;
+})();
+const steam = [-4, 4].map((a0, j) =>
+  k.open(
+    Array.from({ length: 11 }, (_, i) => {
+      const b = H + 6 + i * 2;
+      const a = a0 + 2.2 * Math.sin(i * 0.9 + j * 1.7);
+      return k.upright(CX, CY, 0, a, b);
+    }),
+  ),
+);
+
+const viewBox = k.viewBox(6);
+---
+
+<svg
+  class="drw"
+  viewBox={viewBox}
+  role="img"
+  aria-label="Celular em pé sobre a mesa com uma conversa na tela: uma mensagem, respostas, um áudio e alguém digitando; ao lado, uma xícara de café."
+>
+  <g class="rv" style="--rv-i: 0">
+    <path class="drw-left" d={table.left} />
+    <path class="drw-right" d={table.right} />
+    <path class="drw-top" d={table.top} />
+  </g>
+  <g class="rv" style="--rv-i: 1">
+    <path class="drw-right" d={phoneTop} />
+    <path class="drw-top" d={phoneFront} />
+    <path class="drw-line" d={screen} />
+    <path class="drw-line" d={speaker} />
+  </g>
+  <g class="rv" style="--rv-i: 2; --rv-y: 4px">
+    <path class="drw-shade" d={incoming} />
+    <path class="drw-line" d={incoming} />
+  </g>
+  <g class="rv" style="--rv-i: 3; --rv-y: 4px">
+    <path class="drw-line" d={reply} />
+  </g>
+  <g class="rv" style="--rv-i: 4; --rv-y: 4px">
+    <path class="drw-shade" d={voice} />
+    <path class="drw-line" d={voice} />
+    <path class="drw-fill-muted" d={play} />
+    {wave.map((d) => (
+      <path class="drw-line" d={d} />
+    ))}
+  </g>
+  <g class="rv" style="--rv-i: 5; --rv-y: 4px">
+    <path class="drw-line" d={reply2} />
+  </g>
+  <g class="rv" style="--rv-i: 6; --rv-y: 4px">
+    <path class="drw-shade" d={typing} />
+    <path class="drw-line" d={typing} />
+    {dots.map((p) => (
+      <circle class="drw-fill-muted" cx={p.x} cy={p.y} r="1.3" />
+    ))}
+  </g>
+  <g class="rv" style="--rv-i: 2">
+    <path class="drw-edge" d={handle} />
+    <path class="drw-right" d={cup.side} />
+    <path class="drw-top" d={cup.top} />
+    <path class="drw-shade" d={coffee} />
+    <path class="drw-line" d={coffee} />
+    {steam.map((d) => (
+      <path class="drw-guide" d={d} />
+    ))}
+  </g>
+</svg>

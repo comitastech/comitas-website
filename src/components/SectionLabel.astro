@@ -4,14 +4,17 @@
  */
 interface Props {
   index: number;
+  /** Element to render: a heading when the label names its section. */
+  as?: "p" | "h2" | "h3";
+  id?: string;
   class?: string;
 }
 
-const { index, class: className } = Astro.props;
+const { index, as: Tag = "p", id, class: className } = Astro.props;
 const number = String(index).padStart(2, "0");
 ---
 
-<p class:list={["type-label text-fg-muted", className]}>
+<Tag id={id} class:list={["type-label text-fg-muted", className]}>
   <span class="text-fg-subtle" aria-hidden="true">
     [{" "}
   </span>
@@ -23,4 +26,4 @@ const number = String(index).padStart(2, "0");
   <span class="ms-2 text-fg">
     <slot />
   </span>
-</p>
+</Tag>

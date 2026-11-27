@@ -2,6 +2,8 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import HeroIllustration from "../components/HeroIllustration.astro";
+import SectionHow from "../components/SectionHow.astro";
+import SectionWho from "../components/SectionWho.astro";
 import { contactHref } from "../config/site";
 
 // Copy: docs/copy.md, "1. Topo". The H1 shows the same sentence split into
@@ -34,4 +36,7 @@ const lead =
       </div>
     </div>
   </section>
+
+  <SectionWho />
+  <SectionHow />
 </BaseLayout>

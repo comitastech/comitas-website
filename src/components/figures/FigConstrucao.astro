@@ -1,0 +1,102 @@
+---
+/**
+ * FIG_ 04 [ construção ]: the system assembled in short deliveries. Low
+ * modules already in place, each checked on top (tested); the next module
+ * is being lowered into its marked slot at the front.
+ * "Entregas curtas, que você testa a cada etapa."
+ */
+import { createIso } from "../../lib/iso";
+
+const k = createIso();
+
+const B = 40; // module footprint
+const MH = 16; // module height (low, so the next one stays visible)
+const G = 6; // gap between modules
+const M = 10; // base margin
+const N = 3; // grid size (N x N)
+const size = M * 2 + B * N + G * (N - 1);
+const base = k.box(0, 0, -6, size, size, 6);
+
+const at = (i: number) => M + i * (B + G);
+// Back to front, so nearer modules are drawn on top.
+const cells = Array.from({ length: N * N }, (_, n) => [
+  n % N,
+  Math.floor(n / N),
+]).sort((p, q) => p[0] + p[1] - (q[0] + q[1]));
+
+// The front cell is the next delivery; one cell further back is empty
+// too (still to come), the rest are done.
+const nextCell = [N - 1, N - 1];
+const laterCell = [N - 1, N - 2];
+const isCell = (c: number[], d: number[]) => c[0] === d[0] && c[1] === d[1];
+
+const placed = cells
+  .filter((c) => !isCell(c, nextCell) && !isCell(c, laterCell))
+  .map(([i, j]) => {
+    const x = at(i),
+      y = at(j);
+    return {
+      ...k.box(x, y, 0, B, B, MH),
+      check: k.poly(
+        [
+          [x + 12, y + 21],
+          [x + 18, y + 27],
+          [x + 29, y + 13],
+        ],
+        MH,
+      ),
+    };
+  });
+
+const later = k.rect(
+  at(laterCell[0]),
+  at(laterCell[1]),
+  at(laterCell[0]) + B,
+  at(laterCell[1]) + B,
+  0,
+);
+const [sx, sy] = [at(nextCell[0]), at(nextCell[1])];
+const LIFT = 34;
+const slot = k.rect(sx, sy, sx + B, sy + B, 0);
+const next = k.box(sx, sy, LIFT, B, B, MH);
+const drops = [
+  [sx, sy + B],
+  [sx + B, sy + B],
+  [sx + B, sy],
+].map(([x, y]) => k.open([k.project(x, y, LIFT), k.project(x, y, 0)]));
+
+const viewBox = k.viewBox(6);
+---
+
+<svg
+  class="drw"
+  viewBox={viewBox}
+  role="img"
+  aria-label="Módulos já montados sobre uma base, cada um com uma marca de conferido, e o próximo módulo descendo para o seu lugar."
+>
+  <g class="rv" style="--rv-i: 0">
+    <path class="drw-left" d={base.left} />
+    <path class="drw-right" d={base.right} />
+    <path class="drw-top" d={base.top} />
+    <path class="drw-guide" d={later} />
+    <path class="drw-guide" d={slot} />
+  </g>
+  {placed.map((b, i) => (
+    <g class="rv" style={`--rv-i: ${1 + Math.floor(i / 2)}; --rv-y: 6px`}>
+      <path class="drw-left" d={b.left} />
+      <path class="drw-right" d={b.right} />
+      <path class="drw-top" d={b.top} />
+      <path class="drw-edge" d={b.check} />
+    </g>
+  ))}
+  <g class="rv" style="--rv-i: 5">
+    {drops.map((d) => (
+      <path class="drw-guide" d={d} />
+    ))}
+  </g>
+  <g class="rv" style="--rv-i: 5; --rv-y: -20px">
+    <path class="drw-left" d={next.left} />
+    <path class="drw-right" d={next.right} />
+    <path class="drw-top" d={next.top} />
+  </g>
+</svg>
