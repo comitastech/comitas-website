@@ -1,58 +1,51 @@
 ---
 /**
  * Floating footer: a dark panel inset from the page edges, aligned with the
- * page container. Wordmark at the bottom left; links and legal line on the
- * right (docs/design.md, "Layout").
+ * page container. Links and the legal line on top; below them the official
+ * wordmark across (almost) the whole panel, in three stacked layers (an "exploded
+ * view" of the brand) that bleed off the panel's bottom edge.
  */
 import Wordmark from "../assets/brand/comitas-wordmark-white.svg";
 import { site } from "../config/site";
 
 const year = new Date().getFullYear();
+
+// Layer geometry, as fractions of the wordmark's height. The official SVG
+// is 467.74 x 70 units (viewBox), so height = width x 70 / 467.74.
+const LOGO_RATIO = 467.74 / 70;
+const STEP = 0.2; // vertical offset between layers
+const CUT = 0.2; // part of the front layer cut by the panel's bottom edge
+const LAYERS = 3;
+const stackHeight = 1 + STEP * (LAYERS - 1) - CUT; // in logo heights
+const layers = Array.from({ length: LAYERS }, (_, i) => ({
+  // i = 0 is the back layer (darkest, highest).
+  top: ((i * STEP) / stackHeight) * 100,
+  // Collapsed position: moved down onto the front layer.
+  collapse: (LAYERS - 1 - i) * STEP * 100,
+  front: i === LAYERS - 1,
+}));
 ---
 
 <footer class="footer container-page pb-(--page-margin)">
-  <div class="flex min-h-[22rem] flex-col justify-between gap-16 rounded-panel bg-inverse p-6 text-on-inverse md:min-h-[26rem] md:p-8 lg:p-10">
-    <nav aria-label="Rodapé" class="grid-12">
-      <ul class="col-span-12 flex flex-col gap-4 md:col-span-4 md:col-start-9 lg:col-span-3 lg:col-start-10">
-        {site.nav.map((item) => (
-          <li>
-            <a class="type-label link" href={item.href}>
-              {item.label}
-            </a>
-          </li>
-        ))}
-        <li>
-          <a
-            class="type-label link"
-            href={site.whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            WhatsApp
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- The empty column between logo and legal line keeps the brand's clear
-         space (at least the width of the Λ) on desktop. -->
-    <div class="grid-12 items-end gap-y-12">
-      <p class="col-span-12 lg:col-span-7">
-        <Wordmark
-          class="block h-auto w-full"
-          role="img"
-          aria-label={site.name}
-        />
-      </p>
-      <!-- Two deliberate lines on desktop; one flowing line on small screens. -->
-      <p class="type-caption col-span-12 text-on-inverse-muted lg:col-span-4 lg:col-start-9 lg:flex lg:flex-col lg:items-end lg:gap-1">
-        <span>
-          © {year} {site.name}. Todos os direitos reservados.
-        </span>
-        <span aria-hidden="true" class="lg:hidden">
-          {" "}
-          ·{" "}
-        </span>
+  <div class="panel rounded-panel bg-inverse text-on-inverse">
+    <div class="grid-12 gap-y-10 px-6 pt-8 md:px-8 md:pt-10 lg:px-10 lg:pt-12">
+      <nav aria-label="Rodapé" class="col-span-12 md:col-span-6">
+        <ul class="flex flex-wrap gap-x-6 gap-y-3 sm:gap-x-8">
+          {site.nav.map((item) => (
+            <li>
+              <a class="type-label link" href={item.href}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <p class="type-caption col-span-12 text-on-inverse-muted md:col-span-6 md:text-right">
+        <span class="whitespace-nowrap">
+          © {year} {site.name}.
+        </span>{" "}
+        <span>Todos os direitos reservados.</span>{" "}
+        <span aria-hidden="true"> · </span>
         <span class="whitespace-nowrap">
           {site.country}
           <span aria-hidden="true"> · </span>
@@ -67,8 +60,46 @@ const year = new Date().getFullYear();
         </span>
       </p>
     </div>
+
+    <div
+      class="stack mx-3 mt-14 md:mx-4 md:mt-16 lg:mx-5 lg:mt-20"
+      style={`aspect-ratio: ${LOGO_RATIO.toFixed(4)} / ${stackHeight.toFixed(4)}`}
+      data-footer-stack
+    >
+      {layers.map((layer, i) => (
+        <Wordmark
+          class:list={["layer", `layer--${i}`]}
+          style={`top: ${layer.top.toFixed(3)}%; --collapse: ${layer.collapse.toFixed(2)}%`}
+          role={layer.front ? "img" : undefined}
+          aria-label={layer.front ? site.name : undefined}
+          aria-hidden={layer.front ? undefined : "true"}
+        />
+      ))}
+    </div>
   </div>
 </footer>
+
+<script>
+  // Opens the stacked wordmark (layers separate) the first time the footer
+  // comes into view. Without JS, or with reduced motion, it is shown open.
+  const stack = document.querySelector<HTMLElement>("[data-footer-stack]");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (stack && !reduce && "IntersectionObserver" in window) {
+    stack.classList.add("is-collapsed");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        // Read layout first so the collapsed state is applied, then open.
+        void stack.offsetHeight;
+        stack.classList.remove("is-collapsed");
+        observer.disconnect();
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(stack);
+  }
+</script>
 
 <style>
   .footer {
@@ -78,5 +109,54 @@ const year = new Date().getFullYear();
   .footer ::selection {
     background-color: var(--color-on-inverse);
     color: var(--color-inverse);
+  }
+
+  .panel {
+    overflow: hidden; /* the wordmark bleeds off the bottom edge */
+  }
+
+  .stack {
+    position: relative;
+    /* Layer tones, back to front. */
+    --tone-0: #3d3a39;
+    --tone-1: var(--color-fg-subtle);
+    --tone-2: var(--color-on-inverse);
+  }
+
+  .stack :global(.layer) {
+    position: absolute;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 700ms var(--ease-out);
+  }
+
+  /* The official SVG is used as is; only its fill changes per layer. */
+  .stack :global(.layer--0 path) {
+    fill: var(--tone-0);
+  }
+
+  .stack :global(.layer--1 path) {
+    fill: var(--tone-1);
+  }
+
+  .stack :global(.layer--2 path) {
+    fill: var(--tone-2);
+  }
+
+  .stack :global(.layer--1) {
+    transition-delay: 60ms;
+  }
+
+  .stack.is-collapsed :global(.layer) {
+    transform: translateY(var(--collapse));
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stack :global(.layer) {
+      transition: none;
+    }
   }
 </style>
