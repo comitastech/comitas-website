@@ -9,7 +9,7 @@ fala do contexto do cliente. Sem copiar frases deles.
 
 **Do mesmo lado da mesa.**
 
-Construímos sistemas, automações e agentes de IA junto com quem toca o negócio.
+Construímos sistemas e agentes de IA junto com quem toca o negócio.
 
 **Botão:** Conversar no WhatsApp
 
@@ -39,23 +39,13 @@ A Comitas trabalha com pequenas e médias empresas que já sabem o que querem co
 
 **Agentes de IA.** Atendimento, triagem e tarefas repetitivas nas mãos de assistentes configurados para o seu contexto.
 
-**Automações e integrações.** Os sistemas que você já usa trocando dados sozinhos.
-
 **Produtos digitais.** MVPs e aplicativos para colocar uma ideia à prova.
 
 **Sites.** Quando a presença digital faz parte do projeto.
 
 ---
 
-## 5. Projetos
-
-**Krebs+ Arquitetura Paisagística.** Site institucional em três idiomas. krebsmais.com.br
-
-**Mescla Produtora.** Site institucional para produtora audiovisual. mesclaprod.me
-
----
-
-## 6. Chamada final
+## 5. Chamada final
 
 **Tem uma ideia parada ou um processo travando a operação?**
 Conte no WhatsApp. A primeira conversa é por nossa conta.
@@ -66,3 +56,13 @@ Conte no WhatsApp. A primeira conversa é por nossa conta.
 
 ## Rodapé
 © 2026 Comitas. Todos os direitos reservados. · Brasil · WhatsApp
+
+---
+
+## Fora do ar por enquanto
+
+### Projetos
+
+**Krebs+ Arquitetura Paisagística.** Site institucional em três idiomas. krebsmais.com.br
+
+**Mescla Produtora.** Site institucional para produtora audiovisual. mesclaprod.me

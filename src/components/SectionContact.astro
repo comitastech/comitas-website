@@ -1,6 +1,6 @@
 ---
 /**
- * Section 6, "Chamada final" (docs/copy.md): the closing call to action
+ * Section 5, "Chamada final" (docs/copy.md): the closing call to action
  * before the footer, at #contato. More vertical room than the other
  * sections. One craft detail: a dimension line (cota) under the question
  * that draws in from the left.
@@ -16,7 +16,7 @@ import { contactHref } from "../config/site";
 <section id="contato" class="container-page" aria-labelledby="contato-title">
   <div class="contact grid-12 gap-y-10 border-t border-line" data-reveal>
     <div class="rv col-span-12 lg:col-span-3">
-      <SectionLabel index={6}>Contato</SectionLabel>
+      <SectionLabel index={5}>Contato</SectionLabel>
     </div>
     <div class="col-span-12 lg:col-span-9">
       <div class="w-fit">
@@ -58,13 +58,20 @@ import { contactHref } from "../config/site";
     padding-block: calc(var(--section-space) * 1.5);
   }
 
-  /* Dimension line: 1px line with end ticks, as wide as the question. */
+  /* Dimension line with end ticks. Inset it on narrow screens where the
+     balanced lines do not fill the heading box. */
   .measure {
     position: relative;
     display: block;
     height: 9px;
     margin-top: 1.75rem;
     color: var(--color-fg-subtle);
+  }
+
+  @media (width < 48rem) {
+    .measure {
+      width: 70%;
+    }
   }
 
   .measure-line {

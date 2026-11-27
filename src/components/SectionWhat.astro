@@ -1,12 +1,7 @@
 ---
 /**
- * Section 4, "O que fazemos" (docs/copy.md): a typographic list, no
- * illustration, to give the page some air between the step figures and the
- * project screenshots. Rows are not links.
- *
- * Dividers use --color-border (not --color-line): at 1px, --color-line is
- * almost invisible on the page background, and the dividers are what
- * structures this text-only section (and what draws in on entry).
+ * Section 4, "O que fazemos" (docs/copy.md): a typographic list with
+ * dividers that draw in as it enters the viewport.
  */
 import SectionLabel from "./SectionLabel.astro";
 
@@ -18,10 +13,6 @@ const services = [
   {
     title: "Agentes de IA.",
     text: "Atendimento, triagem e tarefas repetitivas nas mãos de assistentes configurados para o seu contexto.",
-  },
-  {
-    title: "Automações e integrações.",
-    text: "Os sistemas que você já usa trocando dados sozinhos.",
   },
   {
     title: "Produtos digitais.",
@@ -119,26 +110,20 @@ const services = [
     max-width: 44ch;
   }
 
-  /* Desktop: number, title and description side by side (9 columns:
-     1 + 3 + 5). */
+  /* Keep the number close to the title and align the descriptions. */
   @media (width >= 48rem) {
     .service-row {
-      grid-template-columns: repeat(9, minmax(0, 1fr));
+      grid-template-columns: max-content minmax(0, 2fr) minmax(0, 3fr);
       align-items: baseline;
       padding-block: 1.75rem;
     }
 
     .service-number {
-      grid-column: span 1;
       padding-top: 0;
     }
 
-    .service-title {
-      grid-column: span 3;
-    }
-
     .service-text {
-      grid-column: span 5;
+      grid-column: auto;
     }
   }
 

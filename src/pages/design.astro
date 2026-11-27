@@ -6,6 +6,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import SectionLabel from "../components/SectionLabel.astro";
+import { site } from "../config/site";
 import MarkBlack from "../assets/brand/comitas-mark-black.svg";
 import MarkWhite from "../assets/brand/comitas-mark-white.svg";
 import WordmarkBlack from "../assets/brand/comitas-wordmark-black.svg";
@@ -105,8 +106,7 @@ const typeScale = [
     role: "Corpo grande",
     cls: "type-body-lg",
     spec: "Geist 400 · 18px · lh 1.5",
-    sample:
-      "Construímos sistemas, automações e agentes de IA junto com quem toca o negócio.",
+    sample: site.heroLead,
   },
   {
     role: "Corpo",

@@ -5,6 +5,8 @@ export const site = {
   name: "Comitas",
   locale: "pt-BR",
   country: "Brasil",
+  heroLead:
+    "Construímos sistemas e agentes de IA junto com quem toca o negócio.",
   /**
    * WhatsApp link: a path on our own site. The redirect from /whatsapp to
    * WhatsApp is configured in the Cloudflare dashboard, outside the code,
@@ -16,7 +18,6 @@ export const site = {
   nav: [
     { label: "Como trabalhamos", href: "/#como-trabalhamos" },
     { label: "O que fazemos", href: "/#o-que-fazemos" },
-    { label: "Projetos", href: "/#projetos" },
   ],
 } as const;
 
