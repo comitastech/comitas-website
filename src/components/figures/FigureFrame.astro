@@ -1,29 +1,37 @@
 ---
 /**
- * Frame for the small technical figures: crop marks, faint dot grid and a
- * `FIG_ nn [ name ]` caption in mono.
+ * Frame for figures: crop marks and a `FIG_ nn [ name ]` caption in mono.
+ * - variant "drawing" (default): 4:3 sheet with a faint dot grid, for the
+ *   technical drawings.
+ * - variant "image": no grid, sized by its content (e.g. a screenshot), with
+ *   the crop marks just outside the image.
+ * The optional `aside` slot goes at the right end of the caption.
  */
 import "../../styles/drawing.css";
 
 interface Props {
   number: number;
   name: string;
+  variant?: "drawing" | "image";
   class?: string;
 }
 
-const { number, name, class: className } = Astro.props;
+const { number, name, variant = "drawing", class: className } = Astro.props;
 const label = `FIG_ ${String(number).padStart(2, "0")} [ ${name} ]`;
 ---
 
 <figure class:list={["figure-frame", className]}>
-  <div class="frame">
+  <div class:list={["frame", `frame--${variant}`]}>
     <span class="corner corner--tl" aria-hidden="true"></span>
     <span class="corner corner--tr" aria-hidden="true"></span>
     <span class="corner corner--bl" aria-hidden="true"></span>
     <span class="corner corner--br" aria-hidden="true"></span>
     <slot />
   </div>
-  <figcaption class="type-caption mt-3 text-fg-muted">{label}</figcaption>
+  <figcaption class="type-caption mt-3 flex items-baseline justify-between gap-4 text-fg-muted">
+    <span>{label}</span>
+    <slot name="aside" />
+  </figcaption>
 </figure>
 
 <style>
@@ -37,7 +45,13 @@ const label = `FIG_ ${String(number).padStart(2, "0")} [ ${name} ]`;
     padding: 14px;
   }
 
-  .frame::before {
+  .frame--image {
+    display: block;
+    aspect-ratio: auto;
+    padding: 8px;
+  }
+
+  .frame--drawing::before {
     content: "";
     position: absolute;
     inset: 0;
