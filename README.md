@@ -35,6 +35,10 @@ Sources of truth: `docs/copy.md` (approved copy) and `docs/design.md` (visual br
 - Layout: `container-page` (1440px max), `grid-12` (12 columns + gutter), `section-space` (vertical rhythm).
 - Text links: `link` (underline drawn left to right).
 
+## Hosting
+
+Cloudflare Workers with static assets, configured in `wrangler.jsonc` (no server code). Workers Builds runs `npm run build`, then deploys `main` to production and creates a Preview URL for every other branch, so each pull request gets its own preview.
+
 ## Fonts
 
 [Geist and Geist Mono](https://github.com/vercel/geist-font) by The Geist Project Authors, licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/). Files come from the `@fontsource-variable/geist` and `@fontsource-variable/geist-mono` packages and are self-hosted through Astro's font API. The license ships with the site at `/licenses/geist-ofl.txt`.
