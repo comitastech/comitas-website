@@ -21,6 +21,7 @@
   --color-inverse: #101010; /* footer, primary button */
   --color-on-inverse: #f9f9f9;
   --color-layer-back: #3d3a39; /* back layer of the footer wordmark */
+  --color-layer-front: #e9e6e2; /* front layer: warm off-white, not bg */
 
   /*
    * Accent: PROVISIONAL. Change it here and only here.
