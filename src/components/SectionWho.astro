@@ -1,0 +1,28 @@
+---
+/**
+ * Section 2, "Quem atendemos" (docs/copy.md): one short paragraph right
+ * below the hero.
+ */
+import SectionLabel from "./SectionLabel.astro";
+---
+
+<section class="container-page" aria-labelledby="quem-atendemos" data-reveal>
+  <div class="section-space grid-12 gap-y-8 border-t border-line">
+    <div class="rv col-span-12 lg:col-span-3">
+      <SectionLabel index={2} as="h2" id="quem-atendemos">
+        Quem atendemos
+      </SectionLabel>
+    </div>
+    <p
+      class="rv type-statement col-span-12 md:col-span-10 lg:col-span-8"
+      style="--rv-i: 1"
+    >
+      A Comitas trabalha com pequenas e médias empresas que já sabem o que
+      querem construir, ou que só sabem que o jeito atual não aguenta crescer.{" "}
+      <span class="text-fg-muted">
+        Entramos cedo na conversa, construímos em ciclos curtos e ficamos por
+        perto depois da entrega.
+      </span>
+    </p>
+  </div>
+</section>

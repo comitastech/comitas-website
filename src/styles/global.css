@@ -212,6 +212,16 @@
   text-wrap: balance;
 }
 
+/* Short statement paragraph (e.g. "Quem atendemos"): between H3 and H2. */
+@utility type-statement {
+  font-family: var(--font-sans);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2.125rem); /* 24 → 34px */
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
 @utility type-h3 {
   font-family: var(--font-sans);
   font-size: var(--text-h3);

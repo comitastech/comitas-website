@@ -1,0 +1,67 @@
+---
+/**
+ * Section 3, "Como trabalhamos" (docs/copy.md): four steps, each with its
+ * own technical figure (FIG_ 02 to FIG_ 05).
+ */
+import SectionLabel from "./SectionLabel.astro";
+import FigureFrame from "./figures/FigureFrame.astro";
+import FigConversa from "./figures/FigConversa.astro";
+import FigDesenho from "./figures/FigDesenho.astro";
+import FigConstrucao from "./figures/FigConstrucao.astro";
+import FigEvolucao from "./figures/FigEvolucao.astro";
+
+const steps = [
+  {
+    title: "Conversa.",
+    text: "Você explica a ideia do jeito que ela está hoje. Não precisa de documento.",
+    fig: { number: 2, name: "conversa", Component: FigConversa },
+  },
+  {
+    title: "Desenho.",
+    text: "Decidimos juntos o que vem primeiro e deixamos tudo combinado por escrito.",
+    fig: { number: 3, name: "desenho", Component: FigDesenho },
+  },
+  {
+    title: "Construção.",
+    text: "Entregas curtas, que você testa a cada etapa.",
+    fig: { number: 4, name: "construção", Component: FigConstrucao },
+  },
+  {
+    title: "Evolução.",
+    text: "Depois que entra no ar, o sistema acompanha o negócio.",
+    fig: { number: 5, name: "evolução", Component: FigEvolucao },
+  },
+];
+---
+
+<section class="container-page" aria-labelledby="como-trabalhamos">
+  <div class="section-space border-t border-line">
+    <div class="grid-12" data-reveal>
+      <SectionLabel
+        index={3}
+        as="h2"
+        id="como-trabalhamos"
+        class="rv col-span-12"
+      >
+        Como trabalhamos
+      </SectionLabel>
+    </div>
+    <ol class="mt-12 grid grid-cols-1 gap-x-(--gutter) gap-y-16 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
+      {steps.map((step) => (
+        <li class="flex flex-col" data-reveal>
+          <FigureFrame number={step.fig.number} name={step.fig.name}>
+            <step.fig.Component />
+          </FigureFrame>
+          <div class="rv mt-8 flex flex-col gap-3" style="--rv-i: 2">
+            <h3 class="type-h3">{step.title}</h3>
+            <p class="type-body max-w-[32ch] text-fg-muted">{step.text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<script>
+  import "../scripts/reveal";
+</script>
