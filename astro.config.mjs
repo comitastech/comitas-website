@@ -11,6 +11,11 @@ const geistMono =
 
 // https://astro.build/config
 export default defineConfig({
+  // Temporary: the home page arrives with the hero PR. Until then the root
+  // points to the internal design review page.
+  redirects: {
+    "/": "/design",
+  },
   // TODO: set `site` once the production domain is decided (canonical URLs, sitemap).
   fonts: [
     {

@@ -1,0 +1,499 @@
+---
+/**
+ * Internal review page: tokens, typography, buttons, links and grid.
+ * Not linked from the site and marked noindex.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import SectionLabel from "../components/SectionLabel.astro";
+
+// Hex values mirror src/styles/global.css; they are only used to print the
+// value and its contrast ratio. The swatches themselves read the CSS
+// variables, so a token change shows up here even if this list is stale.
+// `on` marks text colors: the page prints their contrast against that surface.
+const colors: { token: string; hex: string; use: string; on?: string }[] = [
+  { token: "bg", hex: "#F9F9F9", use: "Fundo da página" },
+  { token: "surface", hex: "#FFFFFF", use: "Cartões, se houver" },
+  { token: "fg", hex: "#020202", use: "Texto principal", on: "bg" },
+  { token: "fg-muted", hex: "#5C5855", use: "Texto secundário", on: "bg" },
+  {
+    token: "fg-subtle",
+    hex: "#8A8380",
+    use: "Só texto grande ou decorativo",
+    on: "bg",
+  },
+  { token: "border", hex: "#B8B3B0", use: "Bordas de botão, linhas" },
+  { token: "line", hex: "#EEEEEE", use: "Divisores leves" },
+  { token: "inverse", hex: "#101010", use: "Footer, botão primário" },
+  {
+    token: "on-inverse",
+    hex: "#F9F9F9",
+    use: "Texto sobre inverse",
+    on: "inverse",
+  },
+];
+
+const accents = [
+  { name: "Laranja ferramenta", hex: "#FF4F00" },
+  { name: "Azul elétrico", hex: "#2F4BFF" },
+  { name: "Verde oliva", hex: "#5B6B2F" },
+];
+
+function luminance(hex: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrast(a: string, b: string) {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+function rating(ratio: number) {
+  if (ratio >= 7) return "AAA";
+  if (ratio >= 4.5) return "AA";
+  if (ratio >= 3) return "AA grande";
+  return "—";
+}
+
+const format = (n: number) => n.toFixed(2).replace(".", ",");
+
+const typeScale = [
+  {
+    role: "H1",
+    cls: "type-h1",
+    spec: "Geist 500 · caixa alta · 36→56px · lh 1 · −0.04em",
+    sample: "Do mesmo lado da mesa.",
+  },
+  {
+    role: "H2",
+    cls: "type-h2",
+    spec: "Geist 400 · 28→44px · lh 1.1 · −0.025em",
+    sample: "Tem uma ideia parada ou um processo travando a operação?",
+  },
+  {
+    role: "H3",
+    cls: "type-h3",
+    spec: "Geist 500 · 20→24px · lh 1.25 · −0.015em",
+    sample: "Sistemas web.",
+  },
+  {
+    role: "Corpo grande",
+    cls: "type-body-lg",
+    spec: "Geist 400 · 18px · lh 1.5",
+    sample:
+      "Construímos sistemas, automações e agentes de IA junto com quem toca o negócio.",
+  },
+  {
+    role: "Corpo",
+    cls: "type-body",
+    spec: "Geist 400 · 16px · lh 1.5",
+    sample:
+      "A Comitas trabalha com pequenas e médias empresas que já sabem o que querem construir, ou que só sabem que o jeito atual não aguenta crescer. Entramos cedo na conversa, construímos em ciclos curtos e ficamos por perto depois da entrega.",
+  },
+  {
+    role: "Pequeno",
+    cls: "type-small text-fg-muted",
+    spec: "Geist 400 · 14px · lh 1.45 · fg-muted",
+    sample: "Entregas curtas, que você testa a cada etapa.",
+  },
+  {
+    role: "Label",
+    cls: "type-label",
+    spec: "Geist Mono 400 · caixa alta · 13px · −0.02em",
+    sample: "Como trabalhamos",
+  },
+  {
+    role: "Legenda",
+    cls: "type-caption text-fg-muted",
+    spec: "Geist Mono 400 · 12px · −0.02em",
+    sample: "FIG_ 01 [ conversa ]",
+  },
+];
+
+const states = [
+  { label: "Repouso", state: undefined, disabled: false },
+  { label: "Hover", state: "hover", disabled: false },
+  { label: "Foco", state: "focus", disabled: false },
+  { label: "Pressionado", state: "pressed", disabled: false },
+  { label: "Desabilitado", state: undefined, disabled: true },
+] as const;
+
+const columns = Array.from({ length: 12 }, (_, i) => i + 1);
+const spans = [[12], [6, 6], [4, 4, 4], [3, 3, 3, 3], [8, 4], [3, 9]];
+---
+
+<BaseLayout title="Fundação visual · Comitas" noindex>
+  <header class="container-page pt-16 pb-(--section-space) lg:pt-24">
+    <div class="grid-12 gap-y-8">
+      <p class="type-label col-span-12 text-fg-muted">
+        Comitas <span class="text-fg-subtle">/</span> Fundação visual
+      </p>
+      <h1 class="type-h1 col-span-12 lg:col-span-9">Fundação visual</h1>
+      <p class="type-body-lg col-span-12 text-fg-muted md:col-span-8 lg:col-span-6">
+        Tokens, tipografia, botões e grid do site, para revisar o acabamento.
+        Página interna: fora do menu e dos buscadores.
+      </p>
+      <p class="type-caption col-span-12 text-fg-muted">
+        Fonte: docs/design.md (v1) · Passe o mouse ou use Tab nos botões.
+      </p>
+    </div>
+  </header>
+
+  <!-- 01 Colors -->
+  <section class="container-page" aria-labelledby="cores">
+    <div class="section-space grid-12 gap-y-10 border-t border-line">
+      <div class="col-span-12 lg:col-span-3">
+        <SectionLabel index={1}>
+          <span id="cores">Cores</span>
+        </SectionLabel>
+      </div>
+      <div class="col-span-12 lg:col-span-9">
+        <ul class="grid grid-cols-1 gap-(--gutter) sm:grid-cols-2 xl:grid-cols-3">
+          {colors.map((c) => {
+            const surface = colors.find((x) => x.token === c.on);
+            const ratio = surface ? contrast(c.hex, surface.hex) : 0;
+            return (
+              <li class="flex flex-col gap-3">
+                <div
+                  class="h-24 rounded-button border border-line"
+                  style={`background-color: var(--color-${c.token})`}
+                />
+                <div class="flex items-baseline justify-between gap-4">
+                  <p class="type-label">{c.token}</p>
+                  <p class="type-caption text-fg-muted">{c.hex}</p>
+                </div>
+                <p class="type-small text-fg-muted">{c.use}</p>
+                <p class="type-caption text-fg-muted">
+                  --color-{c.token}
+                  {c.on && (
+                    <>
+                      {" "}
+                      · {format(ratio)}:1 sobre {c.on} · {rating(ratio)}
+                    </>
+                  )}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div class="mt-16 grid-12 gap-y-8 border-t border-line pt-10">
+          <div class="col-span-12 md:col-span-5">
+            <p class="type-label">Accent</p>
+            <p class="type-small mt-3 text-fg-muted">
+              Provisório. Um detalhe por tela: um sublinhado, um número, um
+              ponto. Teste as alternativas abaixo; a troca vale só nesta aba.
+            </p>
+            <div
+              class="mt-6 flex flex-wrap gap-2"
+              role="group"
+              aria-label="Testar accent"
+              data-accent-switcher
+            >
+              {accents.map((a, i) => (
+                <Button
+                  variant="secondary"
+                  data-accent={a.hex}
+                  aria-pressed={i === 0 ? "true" : "false"}
+                >
+                  <span
+                    class="me-2 inline-block size-2 rounded-full"
+                    style={`background-color: ${a.hex}`}
+                    aria-hidden="true"
+                  />
+                  {a.name}
+                </Button>
+              ))}
+            </div>
+            <p class="type-caption mt-4 text-fg-muted">
+              <span data-accent-value>#FF4F00</span>
+              {" · "}
+              <span data-accent-contrast>
+                {`${format(contrast("#FF4F00", "#F9F9F9"))}:1`}
+              </span>
+              {" sobre bg"}
+            </p>
+          </div>
+          <div class="col-span-12 flex flex-col gap-6 md:col-span-6 md:col-start-7">
+            <p class="type-caption text-fg-muted">Exemplos de uso</p>
+            <p class="type-h3">
+              Entregas{" "}
+              <span class="underline decoration-accent decoration-1 underline-offset-[0.2em]">
+                curtas
+              </span>
+              , que você testa a cada etapa.
+            </p>
+            <p class="type-label flex items-center gap-2">
+              <span
+                class="size-1.5 rounded-full bg-accent"
+                aria-hidden="true"
+              ></span>
+              Como trabalhamos
+            </p>
+            <p class="type-h2 text-accent">04</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 Typography -->
+  <section class="container-page" aria-labelledby="tipografia">
+    <div class="section-space grid-12 gap-y-10 border-t border-line">
+      <div class="col-span-12 lg:col-span-3">
+        <SectionLabel index={2}>
+          <span id="tipografia">Tipografia</span>
+        </SectionLabel>
+        <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
+          Geist e Geist Mono, licença SIL OFL 1.1. Tamanhos fluidos entre 375 e
+          1440px de largura.
+        </p>
+      </div>
+      <dl class="col-span-12 lg:col-span-9">
+        {typeScale.map((t) => (
+          <div class="grid-12 gap-y-3 border-b border-line py-8 first:pt-0 last:border-b-0">
+            <dt class="col-span-12 flex flex-col gap-1 md:col-span-3">
+              <span class="type-label">{t.role}</span>
+              <span class="type-caption text-fg-muted">{t.spec}</span>
+            </dt>
+            <dd class:list={["col-span-12 md:col-span-9", t.cls]}>
+              {t.sample}
+            </dd>
+          </div>
+        ))}
+        <div class="grid-12 gap-y-3 pt-8">
+          <dt class="col-span-12 flex flex-col gap-1 md:col-span-3">
+            <span class="type-label">Label de seção</span>
+            <span class="type-caption text-fg-muted">[ nn ] + label</span>
+          </dt>
+          <dd class="col-span-12 md:col-span-9">
+            <SectionLabel index={1}>Como trabalhamos</SectionLabel>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 03 Buttons -->
+  <section class="container-page" aria-labelledby="botoes">
+    <div class="section-space grid-12 gap-y-10 border-t border-line">
+      <div class="col-span-12 lg:col-span-3">
+        <SectionLabel index={3}>
+          <span id="botoes">Botões</span>
+        </SectionLabel>
+        <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
+          Inversão de cor em 150ms e hachura de corte deslizando no hover e no
+          foco. Com movimento reduzido, só a cor muda.
+        </p>
+      </div>
+      <div class="col-span-12 flex flex-col gap-16 lg:col-span-9">
+        <div class="flex flex-col gap-6">
+          <p class="type-caption text-fg-muted">Interativos</p>
+          <div class="flex flex-wrap items-center gap-3">
+            <Button href="#botoes" arrow="external">
+              Conversar no WhatsApp
+            </Button>
+            <Button variant="secondary" href="#botoes" arrow="right">
+              Projetos
+            </Button>
+            <Button>Primário</Button>
+            <Button variant="secondary">Secundário</Button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-6">
+          <p class="type-caption text-fg-muted">
+            Estados (fixos, para comparar)
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[40rem] border-collapse text-left">
+              <thead>
+                <tr class="border-b border-line">
+                  <th
+                    class="type-caption pb-4 font-normal text-fg-muted"
+                    scope="col"
+                  >
+                    Variante
+                  </th>
+                  {states.map((s) => (
+                    <th
+                      class="type-caption pb-4 font-normal text-fg-muted"
+                      scope="col"
+                    >
+                      {s.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(["primary", "secondary"] as const).map((variant) => (
+                  <tr class="border-b border-line last:border-b-0">
+                    <th class="type-label py-6 pe-6 font-normal" scope="row">
+                      {variant === "primary" ? "Primário" : "Secundário"}
+                    </th>
+                    {states.map((s) => (
+                      <td class="py-6 pe-6">
+                        <Button
+                          variant={variant}
+                          state={s.state}
+                          disabled={s.disabled}
+                          arrow="right"
+                          tabindex="-1"
+                          aria-hidden="true"
+                        >
+                          Botão
+                        </Button>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <dl class="grid grid-cols-1 gap-x-(--gutter) gap-y-4 sm:grid-cols-2">
+          {[
+            ["Altura", "32px · padding 0 14px · raio 3px"],
+            ["Texto", "Geist Mono 13px · caixa alta · −0.02em"],
+            ["Inversão", "150ms · cubic-bezier(0.4, 0, 0.2, 1)"],
+            ["Hachura", "45° · 1px · passo 8px · fade 100ms · 900ms por ciclo"],
+            ["Pressionado", "scale(0.97) · 100ms"],
+            ["Seta", "desloca 3px no hover e no foco"],
+          ].map(([k, v]) => (
+            <div class="flex flex-col gap-1 border-t border-line pt-3">
+              <dt class="type-label">{k}</dt>
+              <dd class="type-caption text-fg-muted">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 Links -->
+  <section class="container-page" aria-labelledby="links">
+    <div class="section-space grid-12 gap-y-10 border-t border-line">
+      <div class="col-span-12 lg:col-span-3">
+        <SectionLabel index={4}>
+          <span id="links">Links</span>
+        </SectionLabel>
+        <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
+          Sublinhado que se desenha da esquerda para a direita em 200ms.
+        </p>
+      </div>
+      <div class="col-span-12 flex flex-wrap gap-x-8 gap-y-4 lg:col-span-9">
+        <a class="type-label link" href="#links">
+          Como trabalhamos
+        </a>
+        <a class="type-label link" href="#links">
+          O que fazemos
+        </a>
+        <a class="type-label link" href="#links">
+          Projetos
+        </a>
+        <a class="type-body link" href="#links">
+          krebsmais.com.br
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 Grid -->
+  <section class="container-page" aria-labelledby="grid">
+    <div class="section-space grid-12 gap-y-10 border-t border-line">
+      <div class="col-span-12 lg:col-span-3">
+        <SectionLabel index={5}>
+          <span id="grid">Grid e espaço</span>
+        </SectionLabel>
+        <p class="type-small mt-4 max-w-[28ch] text-fg-muted">
+          Container de 1440px com margens laterais, 12 colunas, gutter de 24px
+          (16px no celular).
+        </p>
+      </div>
+      <div class="col-span-12 flex flex-col gap-3 lg:col-span-9">
+        <div class="grid-12" aria-hidden="true">
+          {columns.map((n) => (
+            <div class="type-caption flex h-16 items-end justify-center bg-line pb-2 text-fg-muted">
+              <span class="hidden sm:inline">{String(n).padStart(2, "0")}</span>
+            </div>
+          ))}
+        </div>
+        {spans.map((row) => (
+          <div class="grid-12" aria-hidden="true">
+            {row.map((span) => (
+              <div
+                class="type-caption flex h-10 items-center border border-border px-3 text-fg-muted"
+                style={`grid-column: span ${span} / span ${span}`}
+              >
+                {span}
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <dl class="mt-10 grid grid-cols-1 gap-x-(--gutter) gap-y-4 sm:grid-cols-3">
+          {[
+            ["Largura máxima", "1440px (com margens)"],
+            ["Margem lateral", "20 / 32 / 40px"],
+            ["Respiro de seção", "64px celular · 96px desktop"],
+          ].map(([k, v]) => (
+            <div class="flex flex-col gap-1 border-t border-line pt-3">
+              <dt class="type-label">{k}</dt>
+              <dd class="type-caption text-fg-muted">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Accent preview: swaps --color-accent for this tab only.
+  const switcher = document.querySelector("[data-accent-switcher]");
+  const value = document.querySelector("[data-accent-value]");
+  const ratio = document.querySelector("[data-accent-contrast]");
+
+  const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+
+  switcher?.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLElement>(
+      "[data-accent]",
+    );
+    if (!button) return;
+    const hex = button.dataset.accent!;
+    document.documentElement.style.setProperty("--color-accent", hex);
+    switcher
+      .querySelectorAll("[data-accent]")
+      .forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+    if (value) value.textContent = hex;
+    if (ratio) {
+      const l = luminance(hex);
+      const bg = luminance("#F9F9F9");
+      ratio.textContent = ((bg + 0.05) / (l + 0.05))
+        .toFixed(2)
+        .replace(".", ",")
+        .concat(":1");
+    }
+  });
+</script>
+
+<style>
+  /* Selected accent option keeps the inverted look. */
+  [data-accent-switcher] :global(.btn[aria-pressed="true"]) {
+    --btn-bg: var(--color-inverse);
+    --btn-fg: var(--color-on-inverse);
+    --btn-border: var(--color-inverse);
+  }
+</style>
