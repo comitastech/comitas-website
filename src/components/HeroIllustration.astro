@@ -1,0 +1,585 @@
+---
+/**
+ * FIG_ 01 [ sistema ]: exploded isometric view of a system in four layers
+ * (interface, AI agent, rules, data), drawn as a technical drawing.
+ *
+ * All geometry is computed here from a plain isometric projection, so the
+ * drawing stays exact and easy to adjust (plate size, gap, thickness).
+ * Lines are 1px at any size (vector-effect: non-scaling-stroke).
+ *
+ * Motion: the layers start stacked as one block and separate on page load;
+ * guides, labels and the ruler fade in afterwards. With
+ * prefers-reduced-motion the final state shows directly.
+ */
+
+type Point = [number, number];
+
+// Drawing units (1 unit = 1 CSS px when the figure is shown at 1:1).
+const SIZE = 170; // plate side
+const THICKNESS = 8; // plate thickness
+const GAP = 116; // vertical distance between plates (exploded)
+const INSET = 16; // margin of the drawings on each plate
+
+const COS = Math.cos(Math.PI / 6);
+const SIN = 0.5;
+
+/** Isometric projection: x runs right-down, y runs left-down, z runs up. */
+const project = (x: number, y: number, z: number): Point => [
+  (x - y) * COS,
+  (x + y) * SIN - z,
+];
+
+const fmt = (n: number) => String(Math.round(n * 100) / 100);
+const pt = ([x, y]: Point) => `${fmt(x)} ${fmt(y)}`;
+const closed = (points: Point[]) => `M${points.map(pt).join("L")}Z`;
+const open = (points: Point[]) => `M${points.map(pt).join("L")}`;
+
+/** Circle lying on a plate's top face (an ellipse on screen). */
+const circle = (cx: number, cy: number, r: number, z: number, steps = 48) =>
+  closed(
+    Array.from({ length: steps }, (_, i) => {
+      const t = (i / steps) * Math.PI * 2;
+      return project(cx + r * Math.cos(t), cy + r * Math.sin(t), z);
+    }),
+  );
+
+/** Axis-aligned rectangle on a plate's top face. */
+const rect = (x0: number, y0: number, x1: number, y1: number, z: number) =>
+  closed([
+    project(x0, y0, z),
+    project(x1, y0, z),
+    project(x1, y1, z),
+    project(x0, y1, z),
+  ]);
+
+/** Straight segment on a plate's top face. */
+const seg = (x0: number, y0: number, x1: number, y1: number, z: number) =>
+  open([project(x0, y0, z), project(x1, y1, z)]);
+
+/** Small arrowhead ending at (x, y), pointing along +x on the top face. */
+const arrowX = (x: number, y: number, z: number) =>
+  open([project(x - 5, y - 3, z), project(x, y, z), project(x - 5, y + 3, z)]);
+
+type Layer = {
+  key: string;
+  label: string;
+  /** Detail drawings on the top face (muted lines). */
+  details: (z: number) => string[];
+  /** Detail shapes filled with a light gray. */
+  shaded?: (z: number) => string[];
+  /** Single accent detail, if any. */
+  accent?: (z: number) => string;
+};
+
+const S = SIZE;
+const m = INSET;
+
+// Bottom to top. Lower plates are partly hidden by the plate above them,
+// so their drawings sit on the front half (large x + y), which stays visible.
+const layerSpecs: Layer[] = [
+  {
+    key: "dados",
+    label: "Dados",
+    // A table: 4 columns x 6 rows, one selected row near the front.
+    shaded: (z) => [rect(m, 112, S - m, 130, z)],
+    details: (z) => {
+      const cols = [1, 2, 3].map((k) => m + ((S - 2 * m) * k) / 4);
+      const rows = [1, 2, 3, 4, 5].map((k) => m + ((S - 2 * m) * k) / 6);
+      return [
+        rect(m, m, S - m, S - m, z),
+        ...cols.map((x) => seg(x, m, x, S - m, z)),
+        ...rows.map((y) => seg(m, y, S - m, y, z)),
+      ];
+    },
+  },
+  {
+    key: "regras",
+    label: "Regras",
+    // A flow: input -> branch point -> two outcomes.
+    shaded: (z) => [rect(18, 96, 54, 132, z)],
+    details: (z) => [
+      rect(18, 96, 54, 132, z),
+      seg(54, 114, 79, 114, z),
+      circle(84, 114, 5, z, 24),
+      seg(84, 109, 84, 84, z),
+      seg(84, 84, 106, 84, z),
+      arrowX(106, 84, z),
+      seg(84, 119, 84, 144, z),
+      seg(84, 144, 106, 144, z),
+      arrowX(106, 144, z),
+      rect(106, 70, 154, 98, z),
+      rect(106, 130, 154, 158, z),
+      seg(116, 80, 140, 80, z),
+      seg(116, 88, 132, 88, z),
+      seg(116, 140, 144, 140, z),
+      seg(116, 148, 128, 148, z),
+    ],
+  },
+  {
+    key: "agente",
+    label: "Agente de IA",
+    // A core with six connections.
+    details: (z) => {
+      const c = S / 2;
+      const angles = [0, 1, 2, 3, 4, 5].map(
+        (k) => (k / 6) * Math.PI * 2 + Math.PI / 6,
+      );
+      return [
+        circle(c, c, 22, z),
+        circle(c, c, 62, z, 96),
+        ...angles.map((t) =>
+          circle(c + 54 * Math.cos(t), c + 54 * Math.sin(t), 7, z),
+        ),
+        ...angles.map((t) =>
+          seg(
+            c + 22 * Math.cos(t),
+            c + 22 * Math.sin(t),
+            c + 47 * Math.cos(t),
+            c + 47 * Math.sin(t),
+            z,
+          ),
+        ),
+      ];
+    },
+    accent: (z) => circle(S / 2, S / 2, 8, z),
+  },
+  {
+    key: "interface",
+    label: "Interface",
+    // A window: title bar, sidebar, text lines, a card and a button.
+    shaded: (z) => [rect(66, 128, 106, 144, z)],
+    details: (z) => [
+      rect(m, m, S - m, S - m, z),
+      seg(m, 34, S - m, 34, z),
+      circle(25, 25, 2.5, z, 16),
+      circle(33, 25, 2.5, z, 16),
+      circle(41, 25, 2.5, z, 16),
+      seg(54, 34, 54, S - m, z),
+      ...[46, 56, 66, 76].map((y) => seg(25, y, 45, y, z)),
+      seg(66, 46, 140, 46, z),
+      seg(66, 56, 124, 56, z),
+      seg(66, 66, 134, 66, z),
+      rect(66, 80, 144, 116, z),
+      rect(66, 128, 106, 144, z),
+    ],
+  },
+];
+
+const count = layerSpecs.length;
+const middle = ((count - 1) * GAP) / 2;
+
+const layers = layerSpecs.map((spec, i) => {
+  const z = i * GAP;
+  // Stacked position (all plates touching, centered on the exploded stack).
+  const stackedZ = middle + (i - (count - 1) / 2) * THICKNESS;
+  const top = [
+    project(0, 0, z),
+    project(S, 0, z),
+    project(S, S, z),
+    project(0, S, z),
+  ];
+  return {
+    ...spec,
+    number: String(count - i).padStart(2, "0"),
+    z,
+    // Screen offset from the exploded position to the stacked one.
+    from: z - stackedZ,
+    top: closed(top),
+    // Visible sides: the face at y = S (left) and the face at x = S (right).
+    left: closed([
+      project(0, S, z),
+      project(S, S, z),
+      project(S, S, z - THICKNESS),
+      project(0, S, z - THICKNESS),
+    ]),
+    right: closed([
+      project(S, 0, z),
+      project(S, S, z),
+      project(S, S, z - THICKNESS),
+      project(S, 0, z - THICKNESS),
+    ]),
+    shaded: spec.shaded?.(z) ?? [],
+    details: spec.details(z),
+    accent: spec.accent?.(z),
+  };
+});
+
+// Assembly guides between consecutive plates, at the left and right corners.
+const guides = layers.slice(0, -1).flatMap((layer, i) => {
+  const next = layers[i + 1];
+  return [
+    open([project(0, S, layer.z), project(0, S, next.z - THICKNESS)]),
+    open([project(S, 0, layer.z), project(S, 0, next.z - THICKNESS)]),
+  ];
+});
+
+// Leaders: from the right corner of each plate to a label column.
+const rightX = project(S, 0, 0)[0];
+const labelX = rightX + 36;
+const leaders = layers.map((layer) => {
+  const [x, y] = project(S, 0, layer.z - THICKNESS / 2);
+  return {
+    dot: [x, y] as Point,
+    line: open([
+      [x, y],
+      [labelX, y],
+    ]),
+    // Clears the dot grid between the leader's end and the label.
+    halo: open([
+      [labelX - 2, y],
+      [labelX + 10, y],
+    ]),
+    textX: labelX + 8,
+    textY: y,
+    number: layer.number,
+    label: layer.label,
+  };
+});
+
+// Ruler on the left: minor ticks every 8 units, major ticks at each plate,
+// with dashed extension lines to the plates' left corners.
+const leftX = project(0, S, 0)[0];
+const rulerX = leftX - 40;
+const baseY = project(0, S, 0)[1];
+const topZ = (count - 1) * GAP;
+const ruler = {
+  axis: open([
+    [rulerX, baseY],
+    [rulerX, baseY - topZ],
+  ]),
+  minor: Array.from({ length: Math.floor(topZ / 8) + 1 }, (_, k) => k * 8)
+    .filter((z) => z % GAP !== 0)
+    .map((z) =>
+      open([
+        [rulerX, baseY - z],
+        [rulerX + 3, baseY - z],
+      ]),
+    ),
+  major: layers.map((layer) => ({
+    tick: open([
+      [rulerX - 4, baseY - layer.z],
+      [rulerX + 6, baseY - layer.z],
+    ]),
+    extension: open([
+      [rulerX + 10, baseY - layer.z],
+      [leftX - 6, baseY - layer.z],
+    ]),
+    value: String(layer.z),
+    y: baseY - layer.z,
+  })),
+};
+
+// View box: drawing bounds plus room for labels (right) and ruler values (left).
+const LABEL_ROOM = 172;
+const RULER_ROOM = 44;
+const minX = rulerX - RULER_ROOM;
+const maxX = labelX + LABEL_ROOM;
+const minY = project(0, 0, topZ)[1] - 12;
+const maxY = project(S, S, -THICKNESS)[1] + 12;
+const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
+---
+
+<figure class="hero-figure">
+  <div class="sheet">
+    <span class="corner corner--tl" aria-hidden="true"></span>
+    <span class="corner corner--tr" aria-hidden="true"></span>
+    <span class="corner corner--bl" aria-hidden="true"></span>
+    <span class="corner corner--br" aria-hidden="true"></span>
+    <svg
+      class="fig"
+      viewBox={viewBox}
+      role="img"
+      aria-labelledby="fig-01-title"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <title id="fig-01-title">
+      Vista explodida de um sistema em quatro camadas: interface, agente de IA,
+      regras e dados.
+    </title>
+
+      <defs>
+        <filter
+          id="fig-label-bg"
+          color-interpolation-filters="sRGB"
+          x="-10%"
+          y="-40%"
+          width="120%"
+          height="180%"
+        >
+          <feMorphology
+            in="SourceAlpha"
+            operator="dilate"
+            radius="5"
+            result="area"
+          />
+          <feFlood class="label-bg-color" />
+          <feComposite in2="area" operator="in" />
+          <feMerge>
+            <feMergeNode />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <g class="annotations">
+        <path class="ruler" d={ruler.axis} />
+        {ruler.minor.map((d) => (
+          <path class="ruler" d={d} />
+        ))}
+        {ruler.major.map((tick) => (
+          <>
+            <path class="ruler" d={tick.tick} />
+            <path class="guide" d={tick.extension} />
+            <text
+              class="fig-text fig-text--muted"
+              x={fmt(rulerX - 10)}
+              y={fmt(tick.y)}
+              text-anchor="end"
+              dominant-baseline="central"
+            >
+              {tick.value}
+            </text>
+          </>
+        ))}
+        {guides.map((d) => (
+          <path class="guide" d={d} />
+        ))}
+      </g>
+
+      {layers.map((layer, i) => (
+        <g
+          class="layer"
+          style={`--from: ${fmt(layer.from)}px; --order: ${i}`}
+          data-layer={layer.key}
+        >
+          <path class="face face--left" d={layer.left} />
+          <path class="face face--right" d={layer.right} />
+          <path class="face face--top" d={layer.top} />
+          {layer.shaded.map((d) => (
+            <path class="shade" d={d} />
+          ))}
+          {layer.details.map((d) => (
+            <path class="detail" d={d} />
+          ))}
+          {layer.accent && <path class="accent" d={layer.accent} />}
+        </g>
+      ))}
+
+      <g class="annotations annotations--labels">
+        {leaders.map((leader) => (
+          <>
+            <path class="halo" d={leader.halo} />
+            <path class="leader" d={leader.line} />
+            <circle
+              class="leader-dot"
+              cx={fmt(leader.dot[0])}
+              cy={fmt(leader.dot[1])}
+              r="2"
+            />
+            <text
+              class="fig-text"
+              x={fmt(leader.textX)}
+              y={fmt(leader.textY)}
+              dominant-baseline="central"
+            >
+              <tspan class="fig-text--muted">{leader.number}</tspan>
+              <tspan dx="0.6em">{leader.label.toUpperCase()}</tspan>
+            </text>
+          </>
+        ))}
+      </g>
+    </svg>
+  </div>
+  <figcaption class="type-caption mt-4 flex justify-between gap-4 text-fg-muted">
+    <span>FIG_ 01 [ sistema ]</span>
+    <span>vista explodida</span>
+  </figcaption>
+</figure>
+
+<style>
+  /* Drawing sheet: faint dot grid that fades out at the edges, plus crop
+     marks at the corners. */
+  .sheet {
+    position: relative;
+    isolation: isolate;
+    padding: clamp(12px, 3vw, 32px);
+  }
+
+  .sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-fg) 22%, transparent) 0.75px,
+      transparent 1px
+    );
+    background-size: 16px 16px;
+    background-position: center;
+    mask-image: radial-gradient(closest-side, #000 55%, transparent);
+    pointer-events: none;
+  }
+
+  .corner {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-color: var(--color-fg-subtle);
+    border-style: solid;
+    border-width: 0;
+  }
+
+  .corner--tl {
+    top: 0;
+    left: 0;
+    border-top-width: 1px;
+    border-left-width: 1px;
+  }
+
+  .corner--tr {
+    top: 0;
+    right: 0;
+    border-top-width: 1px;
+    border-right-width: 1px;
+  }
+
+  .corner--bl {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+  }
+
+  .corner--br {
+    right: 0;
+    bottom: 0;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  .fig {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .fig path,
+  .fig circle {
+    vector-effect: non-scaling-stroke;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .face {
+    stroke: var(--color-fg);
+    stroke-width: 1;
+  }
+
+  .face--top {
+    fill: var(--color-surface);
+  }
+
+  .face--left {
+    fill: var(--color-line);
+  }
+
+  .face--right {
+    fill: color-mix(in srgb, var(--color-border) 45%, var(--color-bg));
+  }
+
+  .detail {
+    fill: none;
+    stroke: var(--color-fg-muted);
+    stroke-width: 1;
+  }
+
+  .shade {
+    fill: var(--color-line);
+    stroke: none;
+  }
+
+  .accent {
+    fill: var(--color-accent);
+    stroke: none;
+  }
+
+  .guide {
+    fill: none;
+    stroke: var(--color-fg-subtle);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+  }
+
+  .ruler,
+  .leader {
+    fill: none;
+    stroke: var(--color-fg);
+    stroke-width: 1;
+  }
+
+  .label-bg-color {
+    flood-color: var(--color-bg);
+  }
+
+  .halo {
+    fill: none;
+    stroke: var(--color-bg);
+    stroke-width: 6;
+  }
+
+  .leader-dot {
+    fill: var(--color-fg);
+  }
+
+  .fig-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: -0.02em;
+    fill: var(--color-fg);
+    /* Solid background behind each label (glyphs and the gaps between
+       them), so the sheet's dot grid does not show through. */
+    filter: url(#fig-label-bg);
+  }
+
+  .fig-text--muted {
+    fill: var(--color-fg-muted);
+  }
+
+  /* The figure scales down on small screens; larger text keeps the labels
+     readable (about 10-11px on a 375px screen). */
+  @media (width < 48rem) {
+    .fig-text {
+      font-size: 17px;
+    }
+  }
+
+  /* Entrance: the stacked block opens into the exploded view. */
+  .layer {
+    animation: fig-explode 600ms var(--ease-out) 200ms both;
+  }
+
+  .annotations {
+    animation: fig-fade 300ms linear 700ms both;
+  }
+
+  @keyframes fig-explode {
+    from {
+      transform: translateY(var(--from));
+    }
+  }
+
+  @keyframes fig-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .layer,
+    .annotations {
+      animation: none;
+    }
+  }
+</style>
