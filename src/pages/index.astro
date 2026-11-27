@@ -4,7 +4,8 @@ import Button from "../components/Button.astro";
 import HeroIllustration from "../components/HeroIllustration.astro";
 import { contactHref, contactIsExternal } from "../config/site";
 
-// Copy: docs/copy.md, "1. Topo".
+// Copy: docs/copy.md, "1. Topo". The H1 shows the same sentence split into
+// its two lines ("DO MESMO / LADO DA MESA.").
 const title = "Do mesmo lado da mesa.";
 const lead =
   "Construímos sistemas, automações e agentes de IA junto com quem toca o negócio.";
@@ -13,9 +14,10 @@ const lead =
 <BaseLayout title={`Comitas · ${title}`} description={lead}>
   <section class="container-page" aria-labelledby="hero-title">
     <div class="grid-12 items-center gap-y-14 pt-10 pb-(--section-space) lg:min-h-[calc(100svh-5rem)] lg:pt-0">
-      <div class="col-span-12 flex flex-col items-start md:col-span-9 lg:col-span-5">
-        <h1 id="hero-title" class="type-h1">
-          {title}
+      <div class="col-span-12 flex flex-col items-start md:col-span-9 lg:col-span-6">
+        <h1 id="hero-title" class="type-display">
+          <span class="block">Do mesmo</span>
+          <span class="block">lado da mesa.</span>
         </h1>
         <p class="type-body-lg mt-6 max-w-[34ch] text-fg-muted">{lead}</p>
         <Button
