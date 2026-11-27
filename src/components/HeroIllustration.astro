@@ -60,6 +60,29 @@ const seg = (x0: number, y0: number, x1: number, y1: number, z: number) =>
 const arrowX = (x: number, y: number, z: number) =>
   open([project(x - 5, y - 3, z), project(x, y, z), project(x - 5, y + 3, z)]);
 
+/**
+ * Point on an upright plane that faces the viewer, standing on a plate at
+ * (x, y, z): `a` runs along the screen-horizontal direction (1, -1, 0) / √2,
+ * `b` runs straight up.
+ */
+const upright = (x: number, y: number, z: number, a: number, b: number) =>
+  project(x + a / Math.SQRT2, y - a / Math.SQRT2, z + b);
+
+/** Four-point "spark" (the usual AI mark) standing upright on a plate. */
+function spark(x: number, y: number, z: number, lift: number, r: number) {
+  const p = (a: number, b: number) => upright(x, y, z, a, lift + b);
+  const k = r * 0.16; // how tight the waist of the star is
+  const q = (c: Point, e: Point) => `Q${pt(c)} ${pt(e)}`;
+  return [
+    `M${pt(p(0, r))}`,
+    q(p(k, k), p(r, 0)),
+    q(p(k, -k), p(0, -r)),
+    q(p(-k, -k), p(-r, 0)),
+    q(p(-k, k), p(0, r)),
+    "Z",
+  ].join("");
+}
+
 type Layer = {
   key: string;
   label: string;
@@ -69,6 +92,8 @@ type Layer = {
   shaded?: (z: number) => string[];
   /** Single accent detail, if any. */
   accent?: (z: number) => string;
+  /** Dashed construction lines (e.g. a drop line under a raised part). */
+  construction?: (z: number) => string[];
 };
 
 const S = SIZE;
@@ -118,30 +143,36 @@ const layerSpecs: Layer[] = [
   {
     key: "agente",
     label: "Agente de IA",
-    // A core with six connections.
-    details: (z) => {
-      const c = S / 2;
-      const angles = [0, 1, 2, 3, 4, 5].map(
-        (k) => (k / 6) * Math.PI * 2 + Math.PI / 6,
-      );
-      return [
-        circle(c, c, 22, z),
-        circle(c, c, 62, z, 96),
-        ...angles.map((t) =>
-          circle(c + 54 * Math.cos(t), c + 54 * Math.sin(t), 7, z),
-        ),
-        ...angles.map((t) =>
-          seg(
-            c + 22 * Math.cos(t),
-            c + 22 * Math.sin(t),
-            c + 47 * Math.cos(t),
-            c + 47 * Math.sin(t),
-            z,
-          ),
-        ),
-      ];
-    },
-    accent: (z) => circle(S / 2, S / 2, 8, z),
+    // A conversation: a chat bubble with tokens being written (cursor) and
+    // the spark standing upright above the plate, in the accent color.
+    shaded: (z) => [
+      rect(50, 84, 78, 92, z),
+      rect(82, 84, 100, 92, z),
+      rect(104, 84, 132, 92, z),
+      rect(50, 100, 88, 108, z),
+      rect(92, 100, 106, 108, z),
+      rect(50, 116, 66, 124, z),
+    ],
+    details: (z) => [
+      // Bubble with a tail at the bottom left.
+      closed([
+        project(40, 72, z),
+        project(144, 72, z),
+        project(144, 136, z),
+        project(64, 136, z),
+        project(46, 152, z),
+        project(50, 136, z),
+        project(40, 136, z),
+      ]),
+      // Cursor after the last token.
+      seg(71, 114, 71, 126, z),
+      // Footprint of the spark on the plate.
+      circle(146, 34, 10, z, 40),
+    ],
+    construction: (z) => [
+      open([project(146, 34, z), upright(146, 34, z, 0, 16)]),
+    ],
+    accent: (z) => spark(146, 34, z, 36, 20),
   },
   {
     key: "interface",
@@ -201,6 +232,7 @@ const layers = layerSpecs.map((spec, i) => {
     shaded: spec.shaded?.(z) ?? [],
     details: spec.details(z),
     accent: spec.accent?.(z),
+    construction: spec.construction?.(z) ?? [],
   };
 });
 
@@ -213,69 +245,124 @@ const guides = layers.slice(0, -1).flatMap((layer, i) => {
   ];
 });
 
-// Leaders: from the right corner of each plate to a label column.
-const rightX = project(S, 0, 0)[0];
-const labelX = rightX + 36;
-const leaders = layers.map((layer) => {
-  const [x, y] = project(S, 0, layer.z - THICKNESS / 2);
+// Leaders, drawn like hand annotations: each starts at a detail of its
+// plate, runs diagonally, then turns into a short horizontal "shoulder"
+// that ends at the label. Sides, heights and lengths differ on purpose.
+type LeaderSpec = {
+  key: string;
+  /** Anchor on the plate's top face, in plate units. */
+  at: [number, number];
+  /** Anchor height above the plate (for raised parts). */
+  lift?: number;
+  /** Sideways offset on the upright plane (for raised parts). */
+  side?: number;
+  /** Diagonal run, in screen units. */
+  run: [number, number];
+  /** Shoulder length, in screen units; negative goes left. */
+  shoulder: number;
+};
+
+const leaderSpecs: LeaderSpec[] = [
+  { key: "interface", at: [26, 62], run: [-58, -44], shoulder: -46 },
+  {
+    key: "agente",
+    at: [146, 34],
+    side: 22,
+    lift: 36,
+    run: [36, -28],
+    shoulder: 34,
+  },
+  { key: "regras", at: [36, 132], run: [-70, 40], shoulder: -24 },
+  { key: "dados", at: [140, 150], run: [30, 34], shoulder: 58 },
+];
+
+const LABEL_GAP = 6;
+const leaders = leaderSpecs.map((spec) => {
+  const layer = layers.find((l) => l.key === spec.key)!;
+  const anchor = upright(
+    spec.at[0],
+    spec.at[1],
+    layer.z,
+    spec.side ?? 0,
+    spec.lift ?? 0,
+  );
+  const elbow: Point = [anchor[0] + spec.run[0], anchor[1] + spec.run[1]];
+  const end: Point = [elbow[0] + spec.shoulder, elbow[1]];
+  const left = spec.shoulder < 0;
   return {
-    dot: [x, y] as Point,
-    line: open([
-      [x, y],
-      [labelX, y],
-    ]),
-    // Clears the dot grid between the leader's end and the label.
-    halo: open([
-      [labelX - 2, y],
-      [labelX + 10, y],
-    ]),
-    textX: labelX + 8,
-    textY: y,
+    dot: anchor,
+    line: open([anchor, elbow, end]),
+    textX: end[0] + (left ? -LABEL_GAP : LABEL_GAP),
+    textY: end[1],
+    anchor: left ? "end" : "start",
     number: layer.number,
     label: layer.label,
   };
 });
 
-// Ruler on the left: minor ticks every 8 units, major ticks at each plate,
-// with dashed extension lines to the plates' left corners.
-const leftX = project(0, S, 0)[0];
-const rulerX = leftX - 40;
-const baseY = project(0, S, 0)[1];
-const topZ = (count - 1) * GAP;
-const ruler = {
-  axis: open([
-    [rulerX, baseY],
-    [rulerX, baseY - topZ],
+// One dimension line (cota) on the right: the gap between the two lowest
+// plates, measured at their right corners.
+const [dimLow, dimHigh] = [layers[0], layers[1]];
+const cornerLow = project(S, 0, dimLow.z);
+const cornerHigh = project(S, 0, dimHigh.z);
+const dimX = cornerLow[0] + 26;
+const dimension = {
+  extensions: [
+    open([
+      [cornerLow[0] + 6, cornerLow[1]],
+      [dimX + 6, cornerLow[1]],
+    ]),
+    open([
+      [cornerHigh[0] + 6, cornerHigh[1]],
+      [dimX + 6, cornerHigh[1]],
+    ]),
+  ],
+  line: open([
+    [dimX, cornerLow[1]],
+    [dimX, cornerHigh[1]],
   ]),
-  minor: Array.from({ length: Math.floor(topZ / 8) + 1 }, (_, k) => k * 8)
-    .filter((z) => z % GAP !== 0)
-    .map((z) =>
-      open([
-        [rulerX, baseY - z],
-        [rulerX + 3, baseY - z],
-      ]),
-    ),
-  major: layers.map((layer) => ({
-    tick: open([
-      [rulerX - 4, baseY - layer.z],
-      [rulerX + 6, baseY - layer.z],
+  arrows: [
+    open([
+      [dimX - 3, cornerLow[1] - 6],
+      [dimX, cornerLow[1]],
+      [dimX + 3, cornerLow[1] - 6],
     ]),
-    extension: open([
-      [rulerX + 10, baseY - layer.z],
-      [leftX - 6, baseY - layer.z],
+    open([
+      [dimX - 3, cornerHigh[1] + 6],
+      [dimX, cornerHigh[1]],
+      [dimX + 3, cornerHigh[1] + 6],
     ]),
-    value: String(layer.z),
-    y: baseY - layer.z,
-  })),
+  ],
+  value: String(GAP),
+  textX: dimX + 8,
+  textY: (cornerLow[1] + cornerHigh[1]) / 2,
 };
 
-// View box: drawing bounds plus room for labels (right) and ruler values (left).
-const LABEL_ROOM = 172;
-const RULER_ROOM = 44;
-const minX = rulerX - RULER_ROOM;
-const maxX = labelX + LABEL_ROOM;
-const minY = project(0, 0, topZ)[1] - 12;
-const maxY = project(S, S, -THICKNESS)[1] + 12;
+// View box: plates plus room for the labels on both sides. Label widths are
+// estimated for the mobile font size (the larger one).
+const MONO_EM = 0.6;
+const MOBILE_FONT = 20;
+const labelWidth = (l: (typeof leaders)[number]) =>
+  (l.number.length + 1 + l.label.length) * MOBILE_FONT * MONO_EM;
+const xs = [
+  project(0, S, 0)[0],
+  project(S, 0, 0)[0],
+  dimension.textX + 3 * MOBILE_FONT * MONO_EM,
+  ...leaders.map((l) =>
+    l.anchor === "end" ? l.textX - labelWidth(l) : l.textX + labelWidth(l),
+  ),
+];
+const topZ = (count - 1) * GAP;
+const ys = [
+  project(0, 0, topZ)[1],
+  project(S, S, -THICKNESS)[1],
+  ...leaders.map((l) => l.textY),
+];
+const PAD = 14;
+const minX = Math.min(...xs) - PAD;
+const maxX = Math.max(...xs) + PAD;
+const minY = Math.min(...ys) - PAD;
+const maxY = Math.max(...ys) + PAD;
 const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
 ---
 
@@ -322,28 +409,24 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
       </defs>
 
       <g class="annotations">
-        <path class="ruler" d={ruler.axis} />
-        {ruler.minor.map((d) => (
-          <path class="ruler" d={d} />
-        ))}
-        {ruler.major.map((tick) => (
-          <>
-            <path class="ruler" d={tick.tick} />
-            <path class="guide" d={tick.extension} />
-            <text
-              class="fig-text fig-text--muted"
-              x={fmt(rulerX - 10)}
-              y={fmt(tick.y)}
-              text-anchor="end"
-              dominant-baseline="central"
-            >
-              {tick.value}
-            </text>
-          </>
-        ))}
         {guides.map((d) => (
           <path class="guide" d={d} />
         ))}
+        {dimension.extensions.map((d) => (
+          <path class="ruler" d={d} />
+        ))}
+        <path class="ruler" d={dimension.line} />
+        {dimension.arrows.map((d) => (
+          <path class="ruler" d={d} />
+        ))}
+        <text
+          class="fig-text fig-text--muted"
+          x={fmt(dimension.textX)}
+          y={fmt(dimension.textY)}
+          dominant-baseline="central"
+        >
+          {dimension.value}
+        </text>
       </g>
 
       {layers.map((layer, i) => (
@@ -361,6 +444,9 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
           {layer.details.map((d) => (
             <path class="detail" d={d} />
           ))}
+          {layer.construction.map((d) => (
+            <path class="guide" d={d} />
+          ))}
           {layer.accent && <path class="accent" d={layer.accent} />}
         </g>
       ))}
@@ -368,7 +454,6 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
       <g class="annotations annotations--labels">
         {leaders.map((leader) => (
           <>
-            <path class="halo" d={leader.halo} />
             <path class="leader" d={leader.line} />
             <circle
               class="leader-dot"
@@ -380,6 +465,7 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
               class="fig-text"
               x={fmt(leader.textX)}
               y={fmt(leader.textY)}
+              text-anchor={leader.anchor}
               dominant-baseline="central"
             >
               <tspan class="fig-text--muted">{leader.number}</tspan>
@@ -523,19 +609,13 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
     flood-color: var(--color-bg);
   }
 
-  .halo {
-    fill: none;
-    stroke: var(--color-bg);
-    stroke-width: 6;
-  }
-
   .leader-dot {
     fill: var(--color-fg);
   }
 
   .fig-text {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: -0.02em;
     fill: var(--color-fg);
     /* Solid background behind each label (glyphs and the gaps between
@@ -547,11 +627,11 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(fmt).join(" ");
     fill: var(--color-fg-muted);
   }
 
-  /* The figure scales down on small screens; larger text keeps the labels
-     readable (about 10-11px on a 375px screen). */
+  /* The figure scales down; text sizes are in drawing units, chosen so the
+     labels render at about 10-11px on desktop and on a 375px screen. */
   @media (width < 48rem) {
     .fig-text {
-      font-size: 17px;
+      font-size: 20px; /* keep in sync with MOBILE_FONT */
     }
   }
 
