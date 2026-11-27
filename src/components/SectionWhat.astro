@@ -1,0 +1,160 @@
+---
+/**
+ * Section 4, "O que fazemos" (docs/copy.md): a typographic list, no
+ * illustration, to give the page some air between the step figures and the
+ * project screenshots. Rows are not links.
+ *
+ * Dividers use --color-border (not --color-line): at 1px, --color-line is
+ * almost invisible on the page background, and the dividers are what
+ * structures this text-only section (and what draws in on entry).
+ */
+import SectionLabel from "./SectionLabel.astro";
+
+const services = [
+  {
+    title: "Sistemas web.",
+    text: "Ferramentas internas feitas para o jeito que a sua empresa trabalha.",
+  },
+  {
+    title: "Agentes de IA.",
+    text: "Atendimento, triagem e tarefas repetitivas nas mãos de assistentes configurados para o seu contexto.",
+  },
+  {
+    title: "Automações e integrações.",
+    text: "Os sistemas que você já usa trocando dados sozinhos.",
+  },
+  {
+    title: "Produtos digitais.",
+    text: "MVPs e aplicativos para colocar uma ideia à prova.",
+  },
+  {
+    // Extra to the positioning: lighter visual weight, same copy.
+    title: "Sites.",
+    text: "Quando a presença digital faz parte do projeto.",
+    secondary: true,
+  },
+];
+---
+
+<section class="container-page" aria-labelledby="o-que-fazemos">
+  <div class="section-space grid-12 gap-y-8 border-t border-line" data-reveal>
+    <div class="rv col-span-12 lg:col-span-3">
+      <SectionLabel index={4} as="h2" id="o-que-fazemos">
+        O que fazemos
+      </SectionLabel>
+    </div>
+    <ul class="services col-span-12 lg:col-span-9">
+      {services.map((service, i) => (
+        <li
+          class:list={["service", service.secondary && "service--secondary"]}
+          style={`--rv-i: ${i + 1}`}
+        >
+          <span class="divider" aria-hidden="true" />
+          <div class="rv service-row">
+            <span class="service-number type-label text-fg-subtle">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <h3 class="service-title type-h3">{service.title}</h3>
+            <p class="service-text type-body text-fg-muted">{service.text}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  import "../scripts/reveal";
+</script>
+
+<style>
+  .service {
+    position: relative;
+  }
+
+  /* Closing divider under the last row. */
+  .service:last-child::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 1px;
+    background-color: var(--color-border);
+    transform-origin: left center;
+    transition: transform 700ms var(--ease-out);
+    transition-delay: calc((var(--rv-i) + 1) * 90ms);
+  }
+
+  .divider {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background-color: var(--color-border);
+    transform-origin: left center;
+    transition: transform 700ms var(--ease-out);
+    transition-delay: calc(var(--rv-i) * 90ms);
+  }
+
+  /* Before the section is in view (JS only): dividers not drawn yet. */
+  :global(html.js) [data-reveal]:not(.is-in) .divider,
+  :global(html.js) [data-reveal]:not(.is-in) .service:last-child::after {
+    transform: scaleX(0);
+  }
+
+  .service-row {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    column-gap: var(--gutter);
+    row-gap: 0.5rem;
+    padding-block: 1.5rem;
+  }
+
+  .service-number {
+    padding-top: 0.45em;
+  }
+
+  .service-text {
+    grid-column: 2;
+    max-width: 44ch;
+  }
+
+  /* Desktop: number, title and description side by side (9 columns:
+     1 + 3 + 5). */
+  @media (width >= 48rem) {
+    .service-row {
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+      align-items: baseline;
+      padding-block: 1.75rem;
+    }
+
+    .service-number {
+      grid-column: span 1;
+      padding-top: 0;
+    }
+
+    .service-title {
+      grid-column: span 3;
+    }
+
+    .service-text {
+      grid-column: span 5;
+    }
+  }
+
+  .service--secondary .service-title {
+    color: var(--color-fg-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .divider,
+    .service:last-child::after {
+      transition: none;
+    }
+
+    :global(html.js) [data-reveal]:not(.is-in) .divider,
+    :global(html.js) [data-reveal]:not(.is-in) .service:last-child::after {
+      transform: none;
+    }
+  }
+</style>

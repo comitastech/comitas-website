@@ -152,6 +152,19 @@
     line-height: var(--text-body--line-height);
   }
 
+  /* In-page anchors (footer links, #contato): smooth only without reduced
+     motion, and the target keeps some air above it. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  section[id],
+  h2[id] {
+    scroll-margin-top: 4rem;
+  }
+
   ::selection {
     background-color: var(--color-inverse);
     color: var(--color-on-inverse);
