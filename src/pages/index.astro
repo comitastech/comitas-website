@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import HeroIllustration from "../components/HeroIllustration.astro";
-import { contactHref, contactIsExternal } from "../config/site";
+import { contactHref } from "../config/site";
 
 // Copy: docs/copy.md, "1. Topo". The H1 shows the same sentence split into
 // its two lines ("DO MESMO / LADO DA MESA.").
@@ -23,8 +23,8 @@ const lead =
         <Button
           class="mt-10"
           href={contactHref}
-          arrow={contactIsExternal ? "external" : "right"}
-          target={contactIsExternal ? "_blank" : undefined}
+          arrow="external"
+          target="_blank"
         >
           Conversar no WhatsApp
         </Button>

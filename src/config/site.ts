@@ -6,11 +6,12 @@ export const site = {
   locale: "pt-BR",
   country: "Brasil",
   /**
-   * Official WhatsApp link (https://wa.me/<number>).
-   * TODO: pending the official number; while unset, "WhatsApp" renders as
-   * plain text instead of a link.
+   * WhatsApp link: a path on our own site. The redirect from /whatsapp to
+   * WhatsApp is configured in the Cloudflare dashboard, outside the code,
+   * so the phone number never appears in this public repository.
+   * Opens in a new tab.
    */
-  whatsappUrl: undefined as string | undefined,
+  whatsappUrl: "/whatsapp",
   /** Section anchors, in page order. Targets arrive with the section PRs. */
   nav: [
     { label: "Como trabalhamos", href: "/#como-trabalhamos" },
@@ -19,11 +20,5 @@ export const site = {
   ],
 } as const;
 
-/**
- * Where "talk to us" buttons point: the WhatsApp link once it exists,
- * otherwise the contact anchor on the home page (no made-up number).
- */
-export const contactHref: string = site.whatsappUrl ?? "/#contato";
-
-/** Whether contactHref leaves the site (opens WhatsApp). */
-export const contactIsExternal = Boolean(site.whatsappUrl);
+/** Where "talk to us" buttons point (opens in a new tab). */
+export const contactHref: string = site.whatsappUrl;
