@@ -38,6 +38,7 @@ Base para o design e o desenvolvimento do site. A copy está em `docs/copy.md`.
   --color-line: #EEEEEE;        /* divisores leves */
   --color-inverse: #101010;     /* footer, botão primário */
   --color-on-inverse: #F9F9F9;
+  --color-layer-back: #3D3A39;  /* camada de trás da logo no footer */
   --color-accent: #FF4F00;      /* PROVISÓRIO — testar outras opções */
 }
 ```
@@ -54,7 +55,7 @@ Base para o design e o desenvolvimento do site. A copy está em `docs/copy.md`.
 - Largura máxima 1440px, grid de 12 colunas, gutter 24px.
 - Seções com ~96px de respiro vertical no desktop (~64px no celular).
 - Hero alinhado à esquerda, título grande, linha de apoio curta, um botão primário.
-- **Footer flutuante:** caixa `--color-inverse` com `border-radius: 12px`, afastada das bordas da página, sobre o fundo claro. Logo/nome grande no canto inferior esquerdo; links e "© 2026 Comitas. Todos os direitos reservados. · Brasil · WhatsApp" à direita.
+- **Footer flutuante:** caixa `--color-inverse` com `border-radius: 12px`, afastada das bordas da página, sobre o fundo claro. Links e "© 2026 Comitas. Todos os direitos reservados. · Brasil · WhatsApp" no alto; embaixo, a logo oficial na largura toda, em 3 camadas empilhadas (`--color-layer-back`, `--color-fg-subtle`, `--color-on-inverse`), cada uma escondendo o que está atrás dela, e a da frente cortada pela base da caixa ("vista explodida" da marca).
 
 ## Ilustrações e detalhes de ofício
 - Estilo **desenho técnico**: linhas de 1px em `--color-fg`, sem preenchimento ou com cinza leve, vistas explodidas e cortes.
