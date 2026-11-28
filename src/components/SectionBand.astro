@@ -1,0 +1,266 @@
+---
+/**
+ * EXPERIMENT (draft PR): a full-width band between "Como trabalhamos" and
+ * "O que fazemos" with an architectural engraving and a short statement.
+ *
+ * Three art options, switched by the query string, as in the earlier
+ * background study: `?band=1|2|3`. With no parameter the band is not shown
+ * (the current site). `?phrase=1|2|3` switches the proposed statement. The
+ * phrases are PROPOSALS, marked as such on the page: the final copy is up to
+ * João and then goes to docs/copy.md.
+ *
+ * 1. Colonnade in perspective (engraving, paper).
+ * 2. Floor plan and elevation of a temple (drawn here as SVG, paper).
+ * 3. Bolder: a capital and an arch with construction lines, light ink on
+ *    umber.
+ *
+ * On phones the text sits above the art instead of over it, so contrast
+ * never depends on the picture. The art is decorative (aria-hidden), loads
+ * lazily and only for the option in use.
+ */
+import { Picture } from "astro:assets";
+import capital from "../assets/band/capital.webp";
+import colonnade from "../assets/band/colonnade.webp";
+import PlanSection from "./band/PlanSection.astro";
+
+const phrases = [
+  "Todo sistema começa por um bom desenho.",
+  "Primeiro a planta, depois a obra.",
+  "Construído para durar além da entrega.",
+];
+
+const art = {
+  widths: [480, 768, 1280],
+  formats: ["avif", "webp"] as ("avif" | "webp")[],
+  sizes: "100vw",
+  quality: 48,
+  fallbackFormat: "webp" as const,
+  loading: "lazy" as const,
+  decoding: "async" as const,
+  alt: "",
+  "aria-hidden": "true" as const,
+};
+---
+
+<script is:inline>
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var b = q.get("band");
+    var p = q.get("phrase");
+    var root = document.documentElement;
+    if (b === "1" || b === "2" || b === "3") root.dataset.band = b;
+    root.dataset.phrase = p === "2" || p === "3" ? p : "1";
+  })();
+</script>
+
+<section
+  class="band"
+  aria-label="Faixa com gravura de arquitetura (em estudo)"
+  data-reveal
+>
+  <div class="band-art band-art--1">
+    <Picture src={colonnade} {...art} />
+  </div>
+  <div class="band-art band-art--2">
+    <PlanSection />
+  </div>
+  <div class="band-art band-art--3">
+    <Picture src={capital} {...art} />
+  </div>
+
+  <div class="band-text container-page">
+    {phrases.map((text, i) => (
+      <div class="phrase" data-phrase={i + 1}>
+        <p class="band-tag type-caption">
+          [ proposta de frase · opção {i + 1} de {phrases.length} ]
+        </p>
+        <p class="band-statement type-h1 rv normal-case" style="--rv-i: 1">
+          {text}
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  import "../scripts/reveal";
+</script>
+
+<style>
+  .band {
+    --band-bg: #f3e1c2;
+    --band-fg: #2a1f17;
+    --band-fg-soft: #4a3b2e;
+    --plan-ink: #4a3b2e;
+    position: relative;
+    display: none;
+    overflow: hidden;
+    background-color: var(--band-bg);
+    color: var(--band-fg);
+    /* No layout shift: the height is fixed, the art only fills it. */
+    min-height: 420px;
+  }
+
+  :global(html[data-band]) .band {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :global(html[data-band="3"]) .band {
+    --band-bg: #412c1c;
+    --band-fg: #f6ead6;
+    --band-fg-soft: #d8c6a8;
+  }
+
+  /* Only the chosen art is rendered (and therefore downloaded). */
+  .band-art {
+    display: none;
+  }
+
+  :global(html[data-band="1"]) .band-art--1,
+  :global(html[data-band="2"]) .band-art--2,
+  :global(html[data-band="3"]) .band-art--3 {
+    display: block;
+  }
+
+  .band-art :global(img),
+  .band-art :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .band-art :global(img) {
+    object-fit: cover;
+    object-position: 78% 50%;
+  }
+
+  .band-text {
+    position: relative;
+    z-index: 1;
+    padding-block: 3.5rem 2rem;
+  }
+
+  .phrase {
+    display: none;
+  }
+
+  :global(html[data-phrase="1"]) .phrase[data-phrase="1"],
+  :global(html[data-phrase="2"]) .phrase[data-phrase="2"],
+  :global(html[data-phrase="3"]) .phrase[data-phrase="3"] {
+    display: block;
+  }
+
+  .band-tag {
+    margin-bottom: 1rem;
+    color: var(--band-fg-soft);
+  }
+
+  .band-statement {
+    max-width: 15ch;
+    text-wrap: balance;
+  }
+
+  /* Phones: text first, art below, fading in from the band's own color. */
+  @media (width < 48rem) {
+    .band-art {
+      order: 2;
+      height: 230px;
+      mask-image: linear-gradient(to bottom, transparent, #000 38%);
+    }
+  }
+
+  /* From 768px: the art fills the band and the text sits over its calm side. */
+  @media (width >= 48rem) {
+    .band {
+      min-height: clamp(380px, 38vw, 540px);
+      justify-content: center;
+    }
+
+    .band-art {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* A veil from the left keeps the text contrast independent of the art. */
+    .band::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--band-bg) 96%, transparent) 0%,
+        color-mix(in srgb, var(--band-bg) 80%, transparent) 26%,
+        transparent 58%
+      );
+    }
+
+    .band-text {
+      padding-block: 3rem;
+    }
+
+    .band-statement {
+      max-width: 14ch;
+    }
+  }
+
+  /* Tablets: the text covers more of the art, so the veil reaches further. */
+  @media (48rem <= width < 64rem) {
+    .band::after {
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--band-bg) 96%, transparent) 0%,
+        color-mix(in srgb, var(--band-bg) 88%, transparent) 46%,
+        transparent 82%
+      );
+    }
+  }
+
+  /* Entrance: slow and quiet, once. The art settles in; the plan is wiped in
+     from the left like ink laid down. */
+  :global(html.js) [data-reveal] .band-art {
+    opacity: 0;
+    transition: opacity 1100ms var(--ease-out);
+  }
+
+  :global(html.js) [data-reveal] .band-art :global(img) {
+    transform: scale(1.03);
+    transition: transform 2400ms var(--ease-out);
+  }
+
+  :global(html.js) [data-reveal] .band-art--2 :global(svg) {
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 2400ms var(--ease-out);
+  }
+
+  :global(html.js) [data-reveal].is-in .band-art {
+    opacity: 1;
+  }
+
+  :global(html.js) [data-reveal].is-in .band-art :global(img) {
+    transform: none;
+  }
+
+  :global(html.js) [data-reveal].is-in .band-art--2 :global(svg) {
+    clip-path: inset(0 0 0 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js) [data-reveal] .band-art,
+    :global(html.js) [data-reveal] .band-art :global(img),
+    :global(html.js) [data-reveal] .band-art--2 :global(svg) {
+      opacity: 1;
+      transform: none;
+      clip-path: none;
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .band-art {
+      display: none !important;
+    }
+  }
+</style>
