@@ -106,19 +106,28 @@ const capitalFallback = await getImage({
     <PlanSection />
   </div>
   <div class="band-art band-art--3">
-    <picture aria-hidden="true">
-      {capitalSources.map((source) => (
-        <source {...source} />
-      ))}
-      <img
-        src={capitalFallback.src}
-        width={capital.width}
-        height={capital.height}
-        alt=""
-        loading="lazy"
-        decoding="async"
-      />
-    </picture>
+    <template id="band-capital-art">
+      <picture aria-hidden="true">
+        {capitalSources.map((source) => (
+          <source {...source} />
+        ))}
+        <img
+          src={capitalFallback.src}
+          width={capital.width}
+          height={capital.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
+    </template>
+    <script is:inline>
+      // Keep the draft image out of the browser's preload scanner until selected.
+      if (document.documentElement.dataset.band === "3") {
+        const template = document.getElementById("band-capital-art");
+        template.replaceWith(template.content);
+      }
+    </script>
   </div>
 
   <div class="band-text container-page">
