@@ -19,6 +19,12 @@ export const site = {
     { label: "Como trabalhamos", href: "/#como-trabalhamos" },
     { label: "O que fazemos", href: "/#o-que-fazemos" },
   ],
+  /** Header links: the footer links plus the closing call to action. */
+  headerNav: [
+    { label: "Como trabalhamos", href: "/#como-trabalhamos" },
+    { label: "O que fazemos", href: "/#o-que-fazemos" },
+    { label: "Contato", href: "/#contato" },
+  ],
 } as const;
 
 /** Where "talk to us" buttons point (opens in a new tab). */
