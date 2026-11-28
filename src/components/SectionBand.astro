@@ -18,7 +18,7 @@
  * never depends on the picture. The art is decorative (aria-hidden), loads
  * lazily and only for the option in use.
  */
-import { Picture } from "astro:assets";
+import { getImage, Picture } from "astro:assets";
 import capital from "../assets/band/capital.webp";
 import colonnade from "../assets/band/colonnade.webp";
 import PlanSection from "./band/PlanSection.astro";
@@ -40,6 +40,46 @@ const art = {
   alt: "",
   "aria-hidden": "true" as const,
 };
+
+const capitalSources = await Promise.all(
+  [
+    {
+      media: "(width < 48rem)",
+      sizes: "100vw",
+      widths: [432, 768, 1152],
+      quality: 42,
+    },
+    {
+      media: "(width >= 48rem)",
+      // Include the fitted image width when object-fit crops the sides.
+      sizes: "max(min(65vw, 1100px), clamp(704px, 70.32vw, 1000px))",
+      widths: [720, 1000, 1100, 1440, capital.width],
+      quality: 54,
+    },
+  ].flatMap(({ media, sizes, widths, quality }) =>
+    art.formats.map(async (format) => {
+      const image = await getImage({
+        src: capital,
+        width: widths[0],
+        widths,
+        quality,
+        format,
+      });
+      return {
+        media,
+        sizes,
+        type: `image/${format}`,
+        srcset: image.srcSet.attribute,
+      };
+    }),
+  ),
+);
+const capitalFallback = await getImage({
+  src: capital,
+  width: 768,
+  quality: 42,
+  format: "webp",
+});
 ---
 
 <script is:inline>
@@ -54,6 +94,7 @@ const art = {
 </script>
 
 <section
+  id="faixa-arquitetura"
   class="band"
   aria-label="Faixa com gravura de arquitetura (em estudo)"
   data-reveal
@@ -65,7 +106,19 @@ const art = {
     <PlanSection />
   </div>
   <div class="band-art band-art--3">
-    <Picture src={capital} {...art} />
+    <picture aria-hidden="true">
+      {capitalSources.map((source) => (
+        <source {...source} />
+      ))}
+      <img
+        src={capitalFallback.src}
+        width={capital.width}
+        height={capital.height}
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
   </div>
 
   <div class="band-text container-page">
@@ -107,7 +160,7 @@ const art = {
   }
 
   :global(html[data-band="3"]) .band {
-    --band-bg: #412c1c;
+    --band-bg: #301d10;
     --band-fg: #f6ead6;
     --band-fg-soft: #d8c6a8;
   }
@@ -133,6 +186,10 @@ const art = {
   .band-art :global(img) {
     object-fit: cover;
     object-position: 78% 50%;
+  }
+
+  .band-art--3 :global(img) {
+    object-position: right 53%;
   }
 
   .band-text {
@@ -180,6 +237,13 @@ const art = {
     .band-art {
       position: absolute;
       inset: 0;
+    }
+
+    /* Spend the engraved pixels on the capital, leaving paper under the copy. */
+    .band-art--3 {
+      left: auto;
+      width: clamp(560px, 65%, 1100px);
+      mask-image: linear-gradient(to right, transparent, #000 24%);
     }
 
     /* A veil from the left keeps the text contrast independent of the art. */
