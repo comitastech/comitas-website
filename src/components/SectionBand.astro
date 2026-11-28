@@ -1,0 +1,211 @@
+---
+import { getImage } from "astro:assets";
+import capital from "../assets/band/capital.webp";
+import CapitalGuides from "./band/CapitalGuides.astro";
+
+const formats = ["avif", "webp"] as const;
+const capitalSources = await Promise.all(
+  [
+    {
+      media: "(width < 48rem)",
+      sizes: "100vw",
+      widths: [432, 768, 1152],
+      quality: 42,
+    },
+    {
+      media: "(width >= 48rem)",
+      // Include the fitted image width when object-fit crops the sides.
+      sizes: "max(min(65vw, 1100px), clamp(704px, 70.32vw, 1000px))",
+      widths: [720, 1000, 1100, 1440, capital.width],
+      quality: 54,
+    },
+  ].flatMap(({ media, sizes, widths, quality }) =>
+    formats.map(async (format) => {
+      const image = await getImage({
+        src: capital,
+        width: widths[0],
+        widths,
+        quality,
+        format,
+      });
+      return {
+        media,
+        sizes,
+        type: `image/${format}`,
+        srcset: image.srcSet.attribute,
+      };
+    }),
+  ),
+);
+const capitalFallback = await getImage({
+  src: capital,
+  width: 768,
+  quality: 42,
+  format: "webp",
+});
+---
+
+<section
+  id="faixa-arquitetura"
+  class="band"
+  aria-labelledby="band-title"
+  data-reveal
+>
+  <div class="band-art" aria-hidden="true">
+    <picture>
+      {capitalSources.map((source) => (
+        <source {...source} />
+      ))}
+      <img
+        src={capitalFallback.src}
+        width={capital.width}
+        height={capital.height}
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+    <CapitalGuides />
+  </div>
+
+  <div class="band-text container-page">
+    <h2 id="band-title" class="type-h1 rv normal-case">
+      Todo sistema começa por um bom desenho.
+    </h2>
+  </div>
+</section>
+
+<script>
+  import "../scripts/reveal";
+</script>
+
+<style>
+  .band {
+    --capital-guide-ink: #84654a;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 420px;
+    overflow: hidden;
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  .band-art {
+    --capital-fade: linear-gradient(transparent, #000 32%);
+    position: relative;
+    order: 2;
+    height: 230px;
+    flex-shrink: 0;
+  }
+
+  .band-art picture,
+  .band-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .band-art picture {
+    mask-image:
+      var(--capital-fade),
+      linear-gradient(transparent, #000 12% 82%, transparent),
+      linear-gradient(to right, transparent, #000 7% 94%, transparent);
+    mask-composite: intersect;
+  }
+
+  .band-art img {
+    object-fit: cover;
+    object-position: right center;
+    filter: url(#band-capital-ink);
+  }
+
+  .band-text {
+    position: relative;
+    z-index: 1;
+    padding-block: 3.5rem 2rem;
+  }
+
+  #band-title {
+    max-width: 15ch;
+    text-wrap: balance;
+  }
+
+  @media (width >= 48rem) {
+    .band {
+      min-height: clamp(380px, 38vw, 540px);
+      justify-content: center;
+    }
+
+    .band-art {
+      --capital-fade: linear-gradient(to right, transparent, #000 24%);
+      position: absolute;
+      inset: 0 0 0 auto;
+      width: clamp(560px, 65%, 1100px);
+      height: auto;
+    }
+
+    /* Keep the engraving soft behind the text. */
+    .band::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--color-bg) 96%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 80%, transparent) 26%,
+        transparent 58%
+      );
+    }
+
+    .band-text {
+      padding-block: 3rem;
+    }
+
+    #band-title {
+      max-width: 14ch;
+    }
+  }
+
+  @media (48rem <= width < 84rem) {
+    .band::after {
+      background: linear-gradient(
+        90deg,
+        var(--color-bg) 0%,
+        color-mix(in srgb, var(--color-bg) 93%, transparent) 44%,
+        color-mix(in srgb, var(--color-bg) 86%, transparent) 58%,
+        transparent 79%
+      );
+    }
+  }
+
+  /* The illustration and its guides move as one during the reveal. */
+  :global(html.js) .band .band-art {
+    opacity: 0;
+    transform: scale(1.03);
+    transition:
+      opacity 600ms var(--ease-out),
+      transform 600ms var(--ease-out);
+  }
+
+  :global(html.js) .band.is-in .band-art {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js) .band .band-art {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .band-art {
+      display: none;
+    }
+  }
+</style>

@@ -31,6 +31,10 @@ A Comitas trabalha com pequenas e médias empresas que já sabem o que querem co
 
 **Evolução.** Depois que entra no ar, o sistema acompanha o negócio.
 
+### Faixa de arquitetura
+
+Todo sistema começa por um bom desenho.
+
 ---
 
 ## 4. O que fazemos
