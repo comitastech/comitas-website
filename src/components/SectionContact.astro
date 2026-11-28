@@ -10,11 +10,22 @@
  */
 import Button from "./Button.astro";
 import SectionLabel from "./SectionLabel.astro";
+import limestone from "../assets/contact/limestone.webp";
+import limestoneMobile from "../assets/contact/limestone-mobile.webp";
 import { contactHref } from "../config/site";
+
+const backgroundImages = {
+  "--limestone-wide": `url("${limestone.src}")`,
+  "--limestone-mobile": `url("${limestoneMobile.src}")`,
+};
 ---
 
 <section id="contato" class="container-page" aria-labelledby="contato-title">
-  <div class="contact grid-12 gap-y-10 border-t border-line" data-reveal>
+  <div
+    class="contact grid-12 mb-6 gap-y-10 border-t lg:mb-12"
+    style={backgroundImages}
+    data-reveal
+  >
     <div class="rv col-span-12 lg:col-span-3">
       <SectionLabel index={5}>Contato</SectionLabel>
     </div>
@@ -53,9 +64,33 @@ import { contactHref } from "../config/site";
 </script>
 
 <style>
-  /* The closing section breathes more than the others. */
   .contact {
+    /* Keep the label and supporting copy legible over the photo. */
+    --color-fg-muted: #2e231c;
+    --contact-image: var(--limestone-wide);
     padding-block: calc(var(--section-space) * 1.5);
+    padding-inline: clamp(1.25rem, 4.5vw, 4rem);
+    border-top-color: transparent;
+    border-radius: var(--radius-panel);
+    background-color: #e6d9c8;
+    background-image:
+      linear-gradient(100deg, rgb(251 245 235 / 62%), rgb(251 245 235 / 36%)),
+      var(--contact-image);
+    background-position: 66% 51%;
+    background-size: cover;
+  }
+
+  @media (width < 48rem) {
+    .contact {
+      --contact-image: var(--limestone-mobile);
+      background-position: 61% 50%;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .contact {
+      background-image: none;
+    }
   }
 
   /* Dimension line with end ticks. Inset it on narrow screens where the
