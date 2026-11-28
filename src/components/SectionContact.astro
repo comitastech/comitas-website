@@ -1,0 +1,129 @@
+---
+/**
+ * Section 5, "Chamada final" (docs/copy.md): the closing call to action
+ * before the footer, at #contato. More vertical room than the other
+ * sections. One craft detail: a dimension line (cota) under the question
+ * that draws in from the left.
+ *
+ * The question uses the H1 size in sentence case: in uppercase, a
+ * 57-character question reads as shouting next to the hero.
+ */
+import Button from "./Button.astro";
+import SectionLabel from "./SectionLabel.astro";
+import { contactHref } from "../config/site";
+---
+
+<section id="contato" class="container-page" aria-labelledby="contato-title">
+  <div class="contact grid-12 gap-y-10 border-t border-line" data-reveal>
+    <div class="rv col-span-12 lg:col-span-3">
+      <SectionLabel index={5}>Contato</SectionLabel>
+    </div>
+    <div class="col-span-12 lg:col-span-9">
+      <div class="w-fit">
+        <h2
+          id="contato-title"
+          class="rv type-h1 max-w-[20ch] normal-case"
+          style="--rv-i: 1"
+        >
+          Tem uma ideia parada ou um processo travando a operação?
+        </h2>
+        <span class="measure" aria-hidden="true">
+          <span class="measure-line"></span>
+          <span class="measure-tick measure-tick--start"></span>
+          <span class="measure-tick measure-tick--end"></span>
+        </span>
+      </div>
+      <p
+        class="rv type-body-lg mt-8 max-w-[40ch] text-fg-muted"
+        style="--rv-i: 3"
+      >
+        Conte no WhatsApp. A primeira conversa é por nossa conta.
+      </p>
+      <div class="rv mt-10" style="--rv-i: 4">
+        <Button href={contactHref} arrow="external" target="_blank">
+          Chamar no WhatsApp
+        </Button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import "../scripts/reveal";
+</script>
+
+<style>
+  /* The closing section breathes more than the others. */
+  .contact {
+    padding-block: calc(var(--section-space) * 1.5);
+  }
+
+  /* Dimension line with end ticks. Inset it on narrow screens where the
+     balanced lines do not fill the heading box. */
+  .measure {
+    position: relative;
+    display: block;
+    height: 9px;
+    margin-top: 1.75rem;
+    color: var(--color-fg-subtle);
+  }
+
+  @media (width < 48rem) {
+    .measure {
+      width: 70%;
+    }
+  }
+
+  .measure-line {
+    position: absolute;
+    inset-inline: 0;
+    top: 4px;
+    height: 1px;
+    background-color: currentColor;
+    transform-origin: left center;
+    transition: transform 900ms var(--ease-out) 250ms;
+  }
+
+  .measure-tick {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 9px;
+    background-color: currentColor;
+    transition: opacity 200ms linear;
+  }
+
+  .measure-tick--start {
+    left: 0;
+    transition-delay: 200ms;
+  }
+
+  .measure-tick--end {
+    right: 0;
+    transition-delay: 1100ms;
+  }
+
+  /* Before the section is in view (JS only): not drawn yet. */
+  :global(html.js) [data-reveal]:not(.is-in) .measure-line {
+    transform: scaleX(0);
+  }
+
+  :global(html.js) [data-reveal]:not(.is-in) .measure-tick {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .measure-line,
+    .measure-tick {
+      transition: none;
+    }
+
+    :global(html.js) [data-reveal]:not(.is-in) .measure-line {
+      transform: none;
+    }
+
+    :global(html.js) [data-reveal]:not(.is-in) .measure-tick {
+      opacity: 1;
+    }
+  }
+</style>
