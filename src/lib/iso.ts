@@ -8,6 +8,10 @@
 
 export type Point = [number, number];
 
+/** Shared canvas of the step figures (4:3, matching the figure frame). */
+export const CANVAS_W = 320;
+export const CANVAS_H = 240;
+
 const COS = Math.cos(Math.PI / 6);
 const SIN = 0.5;
 
@@ -140,6 +144,31 @@ export function createIso() {
     return [minX, minY, w, h].map(fmt).join(" ");
   };
 
+  /**
+   * Fixed canvas shared by the step figures: the same size for all of them,
+   * so one drawing unit is the same number of pixels everywhere (equal scale,
+   * equal inner margin). The content is centered in it; `dy` nudges it
+   * vertically (negative = up). Throws when the content leaves less than
+   * `margin` units free on any side, so a drawing can't silently crowd the
+   * frame.
+   */
+  const canvas = (dy = 0, margin = 20) => {
+    const xs = seen.map((p) => p[0]);
+    const ys = seen.map((p) => p[1]);
+    const w = Math.max(...xs) - Math.min(...xs);
+    const h = Math.max(...ys) - Math.min(...ys);
+    if (w > CANVAS_W - margin * 2 || h > CANVAS_H - margin * 2) {
+      throw new Error(
+        `Figure content ${fmt(w)}×${fmt(h)} exceeds the ${CANVAS_W}×${CANVAS_H} canvas minus a ${margin} margin`,
+      );
+    }
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const cy = (Math.min(...ys) + Math.max(...ys)) / 2 + dy;
+    return [cx - CANVAS_W / 2, cy - CANVAS_H / 2, CANVAS_W, CANVAS_H]
+      .map(fmt)
+      .join(" ");
+  };
+
   return {
     project,
     include,
@@ -154,6 +183,7 @@ export function createIso() {
     box,
     cylinder,
     viewBox,
+    canvas,
     pt,
   };
 }
