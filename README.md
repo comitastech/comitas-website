@@ -27,6 +27,7 @@ npm run icons         # regenerate raster favicons from src/assets/brand
 | `src/assets/brand/` | Approved logo files, used as is (see its README for usage rules) |
 | `scripts/generate-icons.mjs` | Builds `favicon.ico`, `apple-touch-icon.png` and manifest icons from the brand icon (`npm run icons`) |
 | `src/config/site.ts` | Site-wide settings (WhatsApp link, navigation) |
+| `src/config/indexing.ts` | Search indexing switch (site is noindex for now; see `docs/indexing.md`) |
 | `src/pages/design.astro` | Internal review page for the design foundation (`/design`, noindex) |
 
 Sources of truth: `docs/copy.md` (approved copy) and `docs/design.md` (visual brief).
