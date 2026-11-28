@@ -10,8 +10,6 @@
  */
 import Button from "./Button.astro";
 import SectionLabel from "./SectionLabel.astro";
-import ember from "../assets/contact/ember.webp";
-import emberMobile from "../assets/contact/ember-mobile.webp";
 import limestone from "../assets/contact/limestone.webp";
 import limestoneMobile from "../assets/contact/limestone-mobile.webp";
 import { contactHref } from "../config/site";
@@ -19,26 +17,15 @@ import { contactHref } from "../config/site";
 const backgroundImages = {
   "--limestone-wide": `url("${limestone.src}")`,
   "--limestone-mobile": `url("${limestoneMobile.src}")`,
-  "--ember-wide": `url("${ember.src}")`,
-  "--ember-mobile": `url("${emberMobile.src}")`,
 };
 ---
 
 <section id="contato" class="container-page" aria-labelledby="contato-title">
   <div
-    class="contact grid-12 gap-y-10 border-t border-line data-[background]:mb-6 lg:data-[background]:mb-12"
+    class="contact grid-12 mb-6 gap-y-10 border-t lg:mb-12"
     style={backgroundImages}
     data-reveal
   >
-    <script is:inline>
-      // Apply the preview layout before the panel content can paint.
-      (() => {
-        const background = new URLSearchParams(location.search).get("bg");
-        if (["1", "2", "3"].includes(background)) {
-          document.currentScript.parentElement.dataset.background = background;
-        }
-      })();
-    </script>
     <div class="rv col-span-12 lg:col-span-3">
       <SectionLabel index={5}>Contato</SectionLabel>
     </div>
@@ -77,102 +64,32 @@ const backgroundImages = {
 </script>
 
 <style>
-  /* The closing section breathes more than the others. */
   .contact {
+    /* Keep the label and supporting copy legible over the photo. */
+    --color-fg-muted: #2e231c;
+    --contact-image: var(--limestone-wide);
     padding-block: calc(var(--section-space) * 1.5);
-  }
-
-  .contact[data-background] {
-    position: relative;
-    isolation: isolate;
     padding-inline: clamp(1.25rem, 4.5vw, 4rem);
     border-top-color: transparent;
     border-radius: var(--radius-panel);
-    background-position: center;
-    background-size: cover;
-  }
-
-  .contact[data-background="1"] {
-    --contact-image: var(--limestone-wide);
     background-color: #e6d9c8;
     background-image:
       linear-gradient(100deg, rgb(251 245 235 / 62%), rgb(251 245 235 / 36%)),
       var(--contact-image);
     background-position: 66% 51%;
-  }
-
-  .contact[data-background="2"] {
-    --focus-ring: var(--color-on-inverse);
-    --contact-image: var(--ember-wide);
-    color: var(--color-on-inverse);
-    background-color: #33251e;
-    background-image:
-      linear-gradient(100deg, rgb(22 16 13 / 46%), rgb(22 16 13 / 27%)),
-      var(--contact-image);
-    background-position: 66% 50%;
-  }
-
-  .contact[data-background="2"] :global(.text-fg),
-  .contact[data-background="2"] :global(.text-fg-muted),
-  .contact[data-background="2"] :global(.text-fg-subtle),
-  .contact[data-background="2"] .measure {
-    color: var(--color-layer-front);
-  }
-
-  .contact[data-background="2"] :global(.btn) {
-    border-color: var(--color-on-inverse);
-  }
-
-  .contact[data-background="3"] {
-    background-color: #e4d9cd;
-    background-image:
-      radial-gradient(ellipse at 95% 4%, #fff1de 0, transparent 58%),
-      linear-gradient(
-        132deg,
-        #ede5db 28%,
-        #e5d9cc 55%,
-        #d4c0ac 56%,
-        #be9c84 83%,
-        #b48e75
-      );
-  }
-
-  .contact[data-background="3"]::before {
-    position: absolute;
-    z-index: -1;
-    inset: 0;
-    border-radius: inherit;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.17;
-    mix-blend-mode: soft-light;
-    pointer-events: none;
-    content: "";
-  }
-
-  .contact:is([data-background="1"], [data-background="3"])
-    :global(.text-fg-muted) {
-    color: #2e231c;
+    background-size: cover;
   }
 
   @media (width < 48rem) {
-    .contact[data-background="1"] {
+    .contact {
       --contact-image: var(--limestone-mobile);
       background-position: 61% 50%;
-    }
-
-    .contact[data-background="2"] {
-      --contact-image: var(--ember-mobile);
-      background-position: 64% 50%;
     }
   }
 
   @media (forced-colors: active) {
-    .contact[data-background] {
+    .contact {
       background-image: none;
-    }
-
-    .contact[data-background="3"]::before {
-      display: none;
     }
   }
 
