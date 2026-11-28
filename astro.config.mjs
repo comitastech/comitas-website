@@ -43,7 +43,8 @@ export default defineConfig({
       name: "Geist",
       cssVariable: "--font-geist",
       provider: fontProviders.local(),
-      fallbacks: ["ui-sans-serif", "system-ui", "sans-serif"],
+      // "Geist Fallback" is defined in src/styles/global.css.
+      fallbacks: ["Geist Fallback", "ui-sans-serif", "system-ui", "sans-serif"],
       options: {
         variants: [{ src: [geist], weight: "100 900", style: "normal" }],
       },
@@ -52,7 +53,8 @@ export default defineConfig({
       name: "Geist Mono",
       cssVariable: "--font-geist-mono",
       provider: fontProviders.local(),
-      fallbacks: ["ui-monospace", "monospace"],
+      // "Geist Mono Fallback" is defined in src/styles/global.css.
+      fallbacks: ["Geist Mono Fallback", "ui-monospace", "monospace"],
       options: {
         variants: [{ src: [geistMono], weight: "100 900", style: "normal" }],
       },

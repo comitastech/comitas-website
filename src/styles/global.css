@@ -1,6 +1,35 @@
 @import "tailwindcss";
 
 /*
+ * Fallback fonts with Geist's metrics (size and vertical overrides), used
+ * while the web fonts load. Text wraps the same way before and after the
+ * swap, so the page does not shift when Geist arrives. The `local()` names
+ * cover Windows/macOS (Arial, Helvetica, Courier New) and Linux
+ * (Liberation, Nimbus, Cousine).
+ */
+@font-face {
+  font-family: "Geist Fallback";
+  src:
+    local("Arial"), local("Helvetica"), local("Liberation Sans"),
+    local("Nimbus Sans");
+  size-adjust: 104.7553%;
+  ascent-override: 95.9379%;
+  descent-override: 28.1609%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Mono Fallback";
+  src:
+    local("Courier New"), local("Liberation Mono"), local("Cousine"),
+    local("Nimbus Mono PS");
+  size-adjust: 99.9837%;
+  ascent-override: 100.5164%;
+  descent-override: 29.5048%;
+  line-gap-override: 0%;
+}
+
+/*
  * Design tokens. Source of truth: docs/design.md.
  *
  * `static` makes Tailwind emit every token as a CSS variable on :root, even
@@ -115,6 +144,7 @@
   --gutter: 16px;
   --page-margin: 20px;
   --section-space: 64px;
+  --header-height: 4rem; /* sticky header; anchors clear it */
 
   --focus-ring: var(--color-fg);
 }
@@ -130,6 +160,7 @@
   :root {
     --page-margin: 40px;
     --section-space: 96px;
+    --header-height: 5rem;
   }
 }
 
@@ -160,9 +191,13 @@
     }
   }
 
-  section[id],
+  /* The header is sticky: anchor targets stop below it. */
+  section[id] {
+    scroll-margin-top: calc(var(--header-height) + 1rem);
+  }
+
   h2[id] {
-    scroll-margin-top: 4rem;
+    scroll-margin-top: calc(var(--header-height) + 1.5rem);
   }
 
   ::selection {
