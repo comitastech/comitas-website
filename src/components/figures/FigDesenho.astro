@@ -9,35 +9,36 @@ import { createIso } from "../../lib/iso";
 
 const k = createIso();
 
-const table = k.box(0, 0, -6, 172, 158, 6);
+const table = k.box(0, 0, -6, 172, 146, 6);
 
 // Sheet of paper with a soft offset shadow.
 const PZ = 0.6;
-const shadow = k.rect(25, 17, 127, 147, 0.1);
-const sheet = k.rect(22, 14, 124, 144, PZ);
+const shadow = k.rect(19, 15, 131, 139, 0.1);
+const sheet = k.rect(16, 10, 128, 134, PZ);
 
 // Title block.
-const title = k.rect(32, 24, 78, 31, PZ);
+const title = k.rect(26, 20, 76, 28, PZ);
 
-// List: three items, first one is "what comes first".
-const rows = [46, 64, 82];
-const highlight = k.rect(28, 39, 118, 55, PZ);
+// List: three items, first one is "what comes first". Big enough to read at
+// column width: square boxes, two lines each.
+const rows = [45, 64, 83];
+const highlight = k.rect(22, 36, 122, 54, PZ);
 const items = rows.flatMap((y, i) => [
-  k.rect(32, y - 4, 40, y + 4, PZ),
-  k.seg(46, y - 2, 112 - i * 12, y - 2, PZ),
-  k.seg(46, y + 3, 90 - i * 6, y + 3, PZ),
+  k.rect(27, y - 4.5, 36, y + 4.5, PZ),
+  k.seg(43, y - 2.5, 114 - i * 12, y - 2.5, PZ),
+  k.seg(43, y + 3, 88 - i * 6, y + 3, PZ),
 ]);
 const check = k.poly(
   [
-    [33, 46],
-    [36, 49.5],
-    [41, 41],
+    [28.5, 45],
+    [31.5, 48.5],
+    [35, 41.5],
   ],
   PZ,
 );
 
 // Divider and two signatures ("combinado por escrito").
-const divider = k.seg(32, 100, 114, 100, PZ);
+const divider = k.seg(26, 98, 118, 98, PZ);
 const signature = (x0: number, x1: number, phase: number) => {
   const n = 28;
   const scribble = k.open(
@@ -45,21 +46,21 @@ const signature = (x0: number, x1: number, phase: number) => {
       const t = i / n;
       const x = x0 + (x1 - x0) * t;
       const y =
-        121 -
-        4 * Math.sin(t * Math.PI * 3 + phase) * Math.sin(t * Math.PI) -
+        117 -
+        5.5 * Math.sin(t * Math.PI * 3 + phase) * Math.sin(t * Math.PI) -
         1.5 * Math.sin(t * Math.PI * 9 + phase);
       return k.project(x, y, PZ);
     }),
   );
-  return { scribble, line: k.seg(x0 - 2, 126, x1 + 2, 126, PZ) };
+  return { scribble, line: k.seg(x0 - 2, 123, x1 + 2, 123, PZ) };
 };
-const signatures = [signature(34, 68, 0), signature(82, 114, 1.4)];
+const signatures = [signature(28, 64, 0), signature(78, 118, 1.4)];
 
 // Pencil lying along y, to the right of the sheet.
 const PX = 144,
   PW = 9,
-  P0 = 22,
-  P1 = 118;
+  P0 = 16,
+  P1 = 108;
 const pencil = k.box(PX, P0, 0, PW, P1 - P0, PW);
 const ferrule = [
   k.seg(PX, P0 + 10, PX + PW, P0 + 10, PW),
@@ -89,7 +90,7 @@ const lead = k.closed([
   apex,
 ]);
 
-const viewBox = k.viewBox(6);
+const viewBox = k.canvas();
 ---
 
 <svg

@@ -1,8 +1,8 @@
 ---
 /**
- * FIG_ 02 [ conversa ]: a phone standing on the table, facing us, with the
- * conversation on its screen (a message, a reply, a voice note, someone
- * typing), next to a cup of coffee.
+ * FIG_ 02 [ conversa ]: a phone standing in a small dock on the table,
+ * facing us, with the conversation on its screen (a message, a reply, a
+ * voice note, someone typing), next to a cup of coffee with room around it.
  * "Você explica a ideia do jeito que ela está hoje."
  */
 import { createIso, type Point } from "../../lib/iso";
@@ -10,23 +10,52 @@ import { createIso, type Point } from "../../lib/iso";
 const k = createIso();
 
 // Table top.
-const table = k.box(0, 0, -6, 150, 120, 6);
+const table = k.box(0, 0, -6, 176, 124, 6);
 
-// Phone standing at (PX, PY), screen facing the viewer.
+// Phone standing at (PX, PY) in a low dock, screen facing the viewer.
 // a: across the screen (left -> right), b: up.
-const PX = 58,
-  PY = 52;
-const HW = 32; // half width
-const PH = 124; // height
+const PX = 78,
+  PY = 76;
+const HW = 30; // half width
+const PH = 104; // height
 const T = 7; // thickness (seen as the top band)
-const front = (a: number, b: number) => k.upright(PX, PY, 0, a, b);
+const DH = 5; // dock height: the phone stands on it
+const front = (a: number, b: number) => k.upright(PX, PY, DH, a, b);
 // Behind the front plane: (-1, -1) / √2 in plan, i.e. straight up on screen.
 const back = (a: number, b: number): Point =>
   k.project(
     PX + a / Math.SQRT2 - T / Math.SQRT2,
     PY - a / Math.SQRT2 - T / Math.SQRT2,
-    b,
+    DH + b,
   );
+/** Point on the table plane, `a` across (screen-horizontal), `d` toward us. */
+const flat = (a: number, d: number, z = 0) =>
+  k.project(PX + (a + d) / Math.SQRT2, PY + (d - a) / Math.SQRT2, z);
+
+// Dock: a low block the phone stands in, a little wider than the phone.
+const DA = HW + 7; // half width
+const D0 = -T - 6; // back edge
+const D1 = 9; // front edge
+const dockTop = k.closed([
+  flat(-DA, D0, DH),
+  flat(DA, D0, DH),
+  flat(DA, D1, DH),
+  flat(-DA, D1, DH),
+]);
+const dockFront = k.closed([
+  flat(-DA, D1, DH),
+  flat(DA, D1, DH),
+  flat(DA, D1, 0),
+  flat(-DA, D1, 0),
+]);
+// Soft shadow on the table, falling to the right of the dock.
+const dockShadow = k.closed([
+  flat(-DA + 6, D1, 0),
+  flat(DA, D1, 0),
+  flat(DA + 20, D1 + 6, 0),
+  flat(-DA + 20, D1 + 6, 0),
+]);
+
 const phoneFront = k.closed([
   front(-HW, 0),
   front(HW, 0),
@@ -40,12 +69,12 @@ const phoneTop = k.closed([
   back(-HW, PH),
 ]);
 const screen = k.closed([
-  front(-HW + 4, 10),
-  front(HW - 4, 10),
-  front(HW - 4, PH - 12),
-  front(-HW + 4, PH - 12),
+  front(-HW + 4, 9),
+  front(HW - 4, 9),
+  front(HW - 4, PH - 11),
+  front(-HW + 4, PH - 11),
 ]);
-const speaker = k.open([front(-6, PH - 6), front(6, PH - 6)]);
+const speaker = k.open([front(-6, PH - 5.5), front(6, PH - 5.5)]);
 
 /** Rectangle on the screen, in screen coordinates (a0..a1, b0..b1). */
 const box = (a0: number, a1: number, b0: number, b1: number) =>
@@ -54,32 +83,33 @@ const box = (a0: number, a1: number, b0: number, b1: number) =>
 // Messages, top to bottom.
 const L = -HW + 8; // incoming bubbles start
 const Rr = HW - 8; // outgoing bubbles end
-const incoming = box(L, 8, 92, 102);
-const reply = box(-6, Rr, 78, 88);
-const voice = box(L, 14, 56, 72);
-const play = k.closed([front(L + 4, 60), front(L + 4, 68), front(L + 10, 64)]);
+const incoming = box(L, 8, 80, 89);
+const reply = box(-6, Rr, 67, 76);
+const voice = box(L, 14, 44, 60);
+const play = k.closed([front(L + 4, 48), front(L + 4, 56), front(L + 10, 52)]);
 const wave = [3, 7, 10, 6, 9, 12, 8, 5, 9, 6, 4, 7].map((h, i) => {
   const a = L + 14 + i * 2.4;
-  return k.open([front(a, 64 - h / 2), front(a, 64 + h / 2)]);
+  return k.open([front(a, 52 - h / 2), front(a, 52 + h / 2)]);
 });
-const reply2 = box(2, Rr, 38, 50);
-const typing = box(L, L + 18, 22, 32);
+const reply2 = box(2, Rr, 31, 41);
+const typing = box(L, L + 18, 16, 25);
 const dots = [L + 5, L + 9, L + 13].map((a) => {
-  const [x, y] = front(a, 27);
+  const [x, y] = front(a, 20.5);
   return { x, y };
 });
 
 // Cup of coffee on the table, to the right of the phone, with a handle and steam.
-const CX = 122,
-  CY = 42,
-  R = 13,
-  H = 22;
+const CX = 140,
+  CY = 50,
+  R = 15,
+  H = 26;
+const cupShadow = k.circle(CX + 8, CY - 8, R, 0, 40);
 const cup = k.cylinder(CX, CY, 0, R, H);
 const coffee = k.circle(CX, CY, R - 3, H, 40);
 const handle = (() => {
-  const p0 = k.upright(CX, CY, 0, R - 1, 17);
-  const c = k.upright(CX, CY, 0, R + 12, 12);
-  const p1 = k.upright(CX, CY, 0, R - 1, 6);
+  const p0 = k.upright(CX, CY, 0, R - 1, 20);
+  const c = k.upright(CX, CY, 0, R + 11, 14);
+  const p1 = k.upright(CX, CY, 0, R - 1, 7);
   return `M${k.pt(p0)}Q${k.pt(c)} ${k.pt(p1)}`;
 })();
 const steam = [-4, 4].map((a0, j) =>
@@ -92,7 +122,7 @@ const steam = [-4, 4].map((a0, j) =>
   ),
 );
 
-const viewBox = k.viewBox(6);
+const viewBox = k.canvas();
 ---
 
 <svg
@@ -107,6 +137,9 @@ const viewBox = k.viewBox(6);
     <path class="drw-top" d={table.top} />
   </g>
   <g class="rv" style="--rv-i: 1">
+    <path class="drw-shade" d={dockShadow} />
+    <path class="drw-top" d={dockTop} />
+    <path class="drw-right" d={dockFront} />
     <path class="drw-right" d={phoneTop} />
     <path class="drw-top" d={phoneFront} />
     <path class="drw-line" d={screen} />
@@ -138,6 +171,7 @@ const viewBox = k.viewBox(6);
     ))}
   </g>
   <g class="rv" style="--rv-i: 2">
+    <path class="drw-shade" d={cupShadow} />
     <path class="drw-edge" d={handle} />
     <path class="drw-right" d={cup.side} />
     <path class="drw-top" d={cup.top} />

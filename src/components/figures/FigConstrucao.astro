@@ -65,7 +65,7 @@ const drops = [
   [sx + B, sy],
 ].map(([x, y]) => k.open([k.project(x, y, LIFT), k.project(x, y, 0)]));
 
-const viewBox = k.viewBox(6);
+const viewBox = k.canvas();
 ---
 
 <svg

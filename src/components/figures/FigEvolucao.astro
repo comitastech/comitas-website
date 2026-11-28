@@ -1,8 +1,10 @@
 ---
 /**
  * FIG_ 05 [ evolução ]: the same system in three versions, growing floor by
- * floor as the business grows; the latest one is live (the section's single
- * accent). "Depois que entra no ar, o sistema acompanha o negócio."
+ * floor as the business grows. Each version has a tag tied to its tower by a
+ * dashed guide, and the next floor of v1 and v2 is outlined (what v2 and v3
+ * add). The latest one is live (the section's single accent).
+ * "Depois que entra no ar, o sistema acompanha o negócio."
  */
 import { createIso, type Point } from "../../lib/iso";
 
@@ -10,24 +12,45 @@ const k = createIso();
 
 const W = 40; // tower footprint
 const FLOOR = 20;
-const PITCH = 58; // distance between towers along x
-const Y0 = 14;
-const base = k.box(0, 0, -6, PITCH * 2 + W + 24, W + Y0 * 2, 6);
+const PITCH = 74; // distance between towers along x
+const X0 = 14;
+const Y0 = 6; // thin rim behind the towers
+const YF = 24; // room in front of the towers, for the tags
+const SX = X0 * 2 + PITCH * 2 + W;
+const SY = Y0 + W + YF;
+const base = k.box(0, 0, -6, SX, SY, 6);
 
 const towers = [1, 2, 3].map((floors, i) => {
-  const x = 12 + i * PITCH;
+  const x = X0 + i * PITCH;
+  const height = floors * FLOOR;
+  // Front-bottom corner of the tower; the guide drops straight down from it
+  // across the plate and out through the front edge, to the tag.
+  const corner = k.project(x + W, Y0 + W, 0);
+  const edge = k.project(x + W + YF, SY, 0);
+  const tagAt = k.include([edge[0], edge[1] + 22]);
+  // The next floor, outlined (v1 -> v2, v2 -> v3).
+  const ghostZ = height + FLOOR;
+  const ghost =
+    floors < 3
+      ? [
+          k.rect(x, Y0, x + W, Y0 + W, ghostZ),
+          k.open([k.project(x, Y0 + W, height), k.project(x, Y0 + W, ghostZ)]),
+          k.open([
+            k.project(x + W, Y0 + W, height),
+            k.project(x + W, Y0 + W, ghostZ),
+          ]),
+          k.open([k.project(x + W, Y0, height), k.project(x + W, Y0, ghostZ)]),
+        ]
+      : [];
   return {
     floors: Array.from({ length: floors }, (_, f) =>
       k.box(x, Y0, f * FLOOR, W, W, FLOOR),
     ),
-    // Version label under the base's front edge.
     label: `v${i + 1}`,
-    labelAt: k.include(
-      (([px, py]): Point => [px - 6, py + 16])(
-        k.project(x + W, Y0 + W + 14, -6),
-      ),
-    ),
-    height: floors * FLOOR,
+    guide: k.open([corner, edge, [edge[0], edge[1] + 8] as Point]),
+    tagAt,
+    ghost,
+    height,
     x,
   };
 });
@@ -52,40 +75,50 @@ const signal = [8, 13].flatMap((r) =>
   }),
 );
 
-const viewBox = k.viewBox(8);
+const viewBox = k.canvas();
 ---
 
 <svg
   class="drw"
   viewBox={viewBox}
   role="img"
-  aria-label="O mesmo sistema em três versões, crescendo andar por andar; a última está no ar."
+  aria-label="O mesmo sistema em três versões, crescendo andar por andar, cada uma com sua etiqueta; a última está no ar."
 >
   <g class="rv" style="--rv-i: 0">
     <path class="drw-left" d={base.left} />
     <path class="drw-right" d={base.right} />
     <path class="drw-top" d={base.top} />
-    {towers.map((t) => (
-      <text
-        class="drw-text"
-        x={t.labelAt[0]}
-        y={t.labelAt[1]}
-        text-anchor="middle"
-      >
-        {t.label}
-      </text>
-    ))}
   </g>
-  {towers.map((t, i) =>
-    t.floors.map((f, j) => (
-      <g class="rv" style={`--rv-i: ${i + j + 1}; --rv-y: 12px`}>
-        <path class="drw-left" d={f.left} />
-        <path class="drw-right" d={f.right} />
-        <path class="drw-top" d={f.top} />
+  {towers.map((t, i) => (
+    <>
+      <g class="rv" style={`--rv-i: ${i * 2 + 1}`}>
+        <path class="drw-guide" d={t.guide} />
+        <text
+          class="drw-text"
+          x={t.tagAt[0]}
+          y={t.tagAt[1]}
+          text-anchor="middle"
+        >
+          {t.label}
+        </text>
       </g>
-    )),
-  )}
-  <g class="rv" style="--rv-i: 5; --rv-y: 6px">
+      {t.floors.map((f, j) => (
+        <g class="rv" style={`--rv-i: ${i * 2 + j + 1}; --rv-y: 12px`}>
+          <path class="drw-left" d={f.left} />
+          <path class="drw-right" d={f.right} />
+          <path class="drw-top" d={f.top} />
+        </g>
+      ))}
+      {t.ghost.length > 0 && (
+        <g class="rv" style={`--rv-i: ${i * 2 + 3}`}>
+          {t.ghost.map((d) => (
+            <path class="drw-guide" d={d} />
+          ))}
+        </g>
+      )}
+    </>
+  ))}
+  <g class="rv" style="--rv-i: 7; --rv-y: 6px">
     <path class="drw-edge" d={mast} />
     {signal.map((d) => (
       <path class="drw-accent-line" d={d} />

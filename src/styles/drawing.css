@@ -78,7 +78,9 @@
 
 .drw-text {
   font-family: var(--font-mono);
-  font-size: 11px;
+  /* In drawing units: about 8px on screen at the narrowest 4-column width
+     (1024px) and about 13px at 1440px and on phones. */
+  font-size: 14px;
   letter-spacing: -0.02em;
   fill: var(--color-fg-muted);
 }
