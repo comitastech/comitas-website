@@ -6,35 +6,71 @@ import SectionContact from "../components/SectionContact.astro";
 import SectionHow from "../components/SectionHow.astro";
 import SectionWhat from "../components/SectionWhat.astro";
 import SectionWho from "../components/SectionWho.astro";
+import limestone from "../assets/contact/limestone.webp";
+import limestoneMobile from "../assets/contact/limestone-mobile.webp";
+import { getImage } from "astro:assets";
 import { contactHref, site } from "../config/site";
 
 // Copy: docs/copy.md, "1. Topo". The H1 shows the same sentence split into
 // its two lines ("DO MESMO / LADO DA MESA.").
 const title = "Do mesmo lado da mesa.";
+
+// Same limestone material as the closing section, softened: the site opens
+// and closes on it. The veil over it hides the fine grain, so the hero gets
+// its own light re-encodes (about 12 KB and 6 KB): the background is part of
+// the first paint and must not slow it down.
+const [heroWide, heroMobile] = await Promise.all([
+  getImage({ src: limestone, width: 1536, format: "webp", quality: 55 }),
+  getImage({ src: limestoneMobile, width: 680, format: "webp", quality: 55 }),
+]);
+const stone = {
+  "--limestone-wide": `url("${heroWide.src}")`,
+  "--limestone-mobile": `url("${heroMobile.src}")`,
+};
 ---
 
 <BaseLayout title={`Comitas · ${title}`} description={site.heroLead}>
+  <Fragment slot="head">
+    <link
+      rel="preload"
+      as="image"
+      href={heroWide.src}
+      type="image/webp"
+      media="(width >= 48rem)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href={heroMobile.src}
+      type="image/webp"
+      media="(width < 48rem)"
+      fetchpriority="high"
+    />
+  </Fragment>
   <section class="container-page" aria-labelledby="hero-title">
-    <div class="grid-12 items-center gap-y-14 pt-10 pb-(--section-space) lg:min-h-[calc(100svh-5rem)] lg:pt-0">
-      <div class="col-span-12 flex flex-col items-start md:col-span-9 lg:col-span-6">
-        <h1 id="hero-title" class="type-display">
-          <span class="block">Do mesmo</span>
-          <span class="block">lado da mesa.</span>
-        </h1>
-        <p class="type-body-lg mt-6 max-w-[34ch] text-fg-muted">
-          {site.heroLead}
-        </p>
-        <Button
-          class="mt-10"
-          href={contactHref}
-          arrow="external"
-          target="_blank"
-        >
-          Conversar no WhatsApp
-        </Button>
-      </div>
-      <div class="col-span-12 sm:col-span-10 sm:col-start-2 md:col-span-8 md:col-start-3 lg:col-span-6 lg:col-start-7">
-        <HeroIllustration />
+    <div class="hero mb-6 lg:mb-12" style={stone}>
+      <div class="grid-12 items-center gap-y-14">
+        <div class="col-span-12 flex flex-col items-start md:col-span-9 lg:col-span-6">
+          <h1 id="hero-title" class="type-display">
+            <span class="block">Do mesmo</span>
+            <span class="block">lado da mesa.</span>
+          </h1>
+          <p class="type-body-lg mt-6 max-w-[34ch] text-fg-muted">
+            {site.heroLead}
+          </p>
+          <Button
+            class="mt-10"
+            href={contactHref}
+            arrow="external"
+            target="_blank"
+          >
+            Conversar no WhatsApp
+          </Button>
+        </div>
+        <div class="col-span-12 sm:col-span-10 sm:col-start-2 md:col-span-8 md:col-start-3 lg:col-span-6 lg:col-start-7">
+          <HeroIllustration />
+        </div>
       </div>
     </div>
   </section>
@@ -44,3 +80,55 @@ const title = "Do mesmo lado da mesa.";
   <SectionWhat />
   <SectionContact />
 </BaseLayout>
+
+<style>
+  .hero {
+    /* Keep the lead legible on the stone. */
+    --color-fg-muted: #2e231c;
+    --hero-image: var(--limestone-wide);
+    padding-block: 2.5rem var(--section-space);
+    padding-inline: clamp(1.25rem, 4.5vw, 4rem);
+    border-radius: var(--radius-panel);
+    background-color: #ebe0d0;
+    /* A light veil over the photo: soft enough that FIG_ 01 stays the
+       protagonist, strong enough to keep the text contrast. */
+    background-image:
+      linear-gradient(100deg, rgb(251 247 240 / 82%), rgb(251 247 240 / 58%)),
+      var(--hero-image);
+    background-position:
+      0 0,
+      72% 40%;
+    background-size: cover;
+  }
+
+  .hero > :global(div) {
+    width: 100%;
+  }
+
+  /* Desktop: the panel fills the first screen (below the header, with the
+     same 48px gap as above the footer) and centers its content. Below that
+     it hugs the content, so a font swap cannot move it. */
+  @media (width >= 64rem) {
+    .hero {
+      display: flex;
+      align-items: center;
+      min-height: calc(100svh - var(--header-height) - 3rem);
+      padding-block: 0;
+    }
+  }
+
+  @media (width < 48rem) {
+    .hero {
+      --hero-image: var(--limestone-mobile);
+      background-position:
+        0 0,
+        61% 50%;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .hero {
+      background-image: none;
+    }
+  }
+</style>
