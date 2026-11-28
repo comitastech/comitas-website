@@ -282,6 +282,19 @@ const capitalFallback = await getImage({
     }
   }
 
+  /* Keep the closer capital from crossing behind the copy on smaller desktops. */
+  @media (48rem <= width < 80rem) {
+    :global(html[data-band="3"]) .band::after {
+      background: linear-gradient(
+        90deg,
+        var(--band-bg) 0%,
+        color-mix(in srgb, var(--band-bg) 93%, transparent) 44%,
+        color-mix(in srgb, var(--band-bg) 86%, transparent) 58%,
+        transparent 79%
+      );
+    }
+  }
+
   /* Entrance: slow and quiet, once. The art settles in; the plan is wiped in
      from the left like ink laid down. */
   :global(html.js) [data-reveal] .band-art {
