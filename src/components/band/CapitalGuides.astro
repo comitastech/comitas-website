@@ -1,0 +1,84 @@
+<svg
+  class="capital-guides"
+  viewBox="0 0 1706 922"
+  preserveAspectRatio="xMaxYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  <defs>
+    <!-- Extract the engraved highlights as translucent ink on the page. -->
+    <filter id="band-capital-ink" color-interpolation-filters="sRGB">
+      <feColorMatrix
+        type="matrix"
+        values="0 0 0 0 .20
+                0 0 0 0 .15
+                0 0 0 0 .11
+                .32 1.07 .11 0 -.30"
+      />
+    </filter>
+  </defs>
+
+  <!-- Extend the arch and the main levels into the open drawing area. -->
+  <g class="projection">
+    <path d="M-480 219H1690 M-430 347H1658 M-470 548H1690 M147 757H1655" />
+    <path d="M-284 48V863 M488 168V817 M970 74V940 M1454 168V817" />
+    <path d="M-284 548L389 219 M-284 548L315 347 M-284 548L488 757" />
+    <path d="M-380 18C-43 -157 297 37 472 219S668 565 626 811" />
+    <path d="M-523 10C-160 -239 260 -93 516 207S737 656 685 870" />
+    <path d="M-284 8a540 540 0 0 1 0 1080 M-284 -62a610 610 0 0 1 0 1220" />
+  </g>
+
+  <!-- The compass marks are centered on the two engraved volutes. -->
+  <g class="compass">
+    <circle cx="488" cy="547" r="210" />
+    <circle cx="1454" cy="549" r="210" />
+    <circle cx="488" cy="547" r="119" class="dashed" />
+    <circle cx="1454" cy="549" r="119" class="dashed" />
+    <path d="M468 547h40m-20-20v40 M1434 549h40m-20-20v40" />
+    <path d="M488 154V211M1454 154V211M488 182H1454M480 190l16-16m950 16 16-16" />
+    <path d="M970 339v16m-8-8h16 M970 540v16m-8-8h16 M-284 535v26m-13-13h26" />
+  </g>
+</svg>
+
+<style>
+  .capital-guides {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    fill: none;
+    stroke: var(--capital-guide-ink);
+  }
+
+  path,
+  circle {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .projection {
+    stroke-width: 0.75px;
+    opacity: 0.52;
+  }
+
+  .compass {
+    stroke-width: 1px;
+    opacity: 0.66;
+  }
+
+  .dashed {
+    stroke-dasharray: 4 3;
+  }
+
+  @media (width < 48rem) {
+    .capital-guides {
+      overflow: hidden;
+      mask-image: linear-gradient(transparent, #000 11% 91%, transparent);
+    }
+
+    .projection {
+      opacity: 0.62;
+    }
+  }
+</style>

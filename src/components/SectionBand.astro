@@ -11,8 +11,8 @@
  *
  * 1. Colonnade in perspective (engraving, paper).
  * 2. Floor plan and elevation of a temple (drawn here as SVG, paper).
- * 3. Bolder: a capital and an arch with construction lines, light ink on
- *    umber.
+ * 3. An engraved capital and arch with construction lines. `&paper=light`
+ *    re-inks the same drawing on the page background.
  *
  * On phones the text sits above the art instead of over it, so contrast
  * never depends on the picture. The art is decorative (aria-hidden), loads
@@ -21,6 +21,7 @@
 import { getImage, Picture } from "astro:assets";
 import capital from "../assets/band/capital.webp";
 import colonnade from "../assets/band/colonnade.webp";
+import CapitalGuides from "./band/CapitalGuides.astro";
 import PlanSection from "./band/PlanSection.astro";
 
 const phrases = [
@@ -89,6 +90,8 @@ const capitalFallback = await getImage({
     var p = q.get("phrase");
     var root = document.documentElement;
     if (b === "1" || b === "2" || b === "3") root.dataset.band = b;
+    if (b === "3" && q.get("paper") === "light")
+      root.dataset.bandPaper = "light";
     root.dataset.phrase = p === "2" || p === "3" ? p : "1";
   })();
 </script>
@@ -107,19 +110,22 @@ const capitalFallback = await getImage({
   </div>
   <div class="band-art band-art--3">
     <template id="band-capital-art">
-      <picture aria-hidden="true">
-        {capitalSources.map((source) => (
-          <source {...source} />
-        ))}
-        <img
-          src={capitalFallback.src}
-          width={capital.width}
-          height={capital.height}
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
-      </picture>
+      <div class="capital-plate" aria-hidden="true">
+        <picture>
+          {capitalSources.map((source) => (
+            <source {...source} />
+          ))}
+          <img
+            src={capitalFallback.src}
+            width={capital.width}
+            height={capital.height}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+        <CapitalGuides />
+      </div>
     </template>
     <script is:inline>
       // Keep the draft image out of the browser's preload scanner until selected.
@@ -172,6 +178,14 @@ const capitalFallback = await getImage({
     --band-bg: #301d10;
     --band-fg: #f6ead6;
     --band-fg-soft: #d8c6a8;
+    --capital-guide-ink: #d9aa76;
+  }
+
+  :global(html[data-band-paper="light"]) .band {
+    --band-bg: var(--color-bg);
+    --band-fg: var(--color-fg);
+    --band-fg-soft: var(--color-fg-muted);
+    --capital-guide-ink: #84654a;
   }
 
   /* Only the chosen art is rendered (and therefore downloaded). */
@@ -198,7 +212,28 @@ const capitalFallback = await getImage({
   }
 
   .band-art--3 :global(img) {
-    object-position: right 53%;
+    object-position: right center;
+  }
+
+  .capital-plate {
+    position: relative;
+    height: 100%;
+  }
+
+  .capital-plate picture {
+    mask-image: var(--capital-fade);
+  }
+
+  :global(html[data-band-paper="light"]) .capital-plate picture {
+    mask-image:
+      var(--capital-fade),
+      linear-gradient(transparent, #000 12% 82%, transparent),
+      linear-gradient(to right, transparent, #000 7% 94%, transparent);
+    mask-composite: intersect;
+  }
+
+  :global(html[data-band-paper="light"]) .capital-plate img {
+    filter: url(#band-capital-ink);
   }
 
   .band-text {
@@ -234,6 +269,11 @@ const capitalFallback = await getImage({
       height: 230px;
       mask-image: linear-gradient(to bottom, transparent, #000 38%);
     }
+
+    .band-art--3 {
+      --capital-fade: linear-gradient(transparent, #000 32%);
+      mask-image: none;
+    }
   }
 
   /* From 768px: the art fills the band and the text sits over its calm side. */
@@ -250,9 +290,9 @@ const capitalFallback = await getImage({
 
     /* Spend the engraved pixels on the capital, leaving paper under the copy. */
     .band-art--3 {
+      --capital-fade: linear-gradient(to right, transparent, #000 24%);
       left: auto;
       width: clamp(560px, 65%, 1100px);
-      mask-image: linear-gradient(to right, transparent, #000 24%);
     }
 
     /* A veil from the left keeps the text contrast independent of the art. */
@@ -292,7 +332,7 @@ const capitalFallback = await getImage({
   }
 
   /* Keep the closer capital from crossing behind the copy on smaller desktops. */
-  @media (48rem <= width < 80rem) {
+  @media (48rem <= width < 84rem) {
     :global(html[data-band="3"]) .band::after {
       background: linear-gradient(
         90deg,
@@ -311,7 +351,9 @@ const capitalFallback = await getImage({
     transition: opacity 1100ms var(--ease-out);
   }
 
-  :global(html.js) [data-reveal] .band-art :global(img) {
+  /* Scale the capital and its registered guides together. */
+  :global(html.js) [data-reveal] .band-art--1 :global(img),
+  :global(html.js) [data-reveal] .capital-plate {
     transform: scale(1.03);
     transition: transform 2400ms var(--ease-out);
   }
@@ -325,7 +367,8 @@ const capitalFallback = await getImage({
     opacity: 1;
   }
 
-  :global(html.js) [data-reveal].is-in .band-art :global(img) {
+  :global(html.js) [data-reveal].is-in .band-art--1 :global(img),
+  :global(html.js) [data-reveal].is-in .capital-plate {
     transform: none;
   }
 
@@ -335,7 +378,8 @@ const capitalFallback = await getImage({
 
   @media (prefers-reduced-motion: reduce) {
     :global(html.js) [data-reveal] .band-art,
-    :global(html.js) [data-reveal] .band-art :global(img),
+    :global(html.js) [data-reveal] .band-art--1 :global(img),
+    :global(html.js) [data-reveal] .capital-plate,
     :global(html.js) [data-reveal] .band-art--2 :global(svg) {
       opacity: 1;
       transform: none;
