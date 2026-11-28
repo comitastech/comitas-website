@@ -88,8 +88,11 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
           © {year} {site.name}.
         </span>{" "}
         <span>Todos os direitos reservados.</span>{" "}
-        <span aria-hidden="true"> · </span>
-        <span class="whitespace-nowrap">
+        <span class="legal-separator" aria-hidden="true">
+          {" "}
+          ·{" "}
+        </span>
+        <span class="legal-country whitespace-nowrap">
           {site.country}
           <span aria-hidden="true"> · </span>
           <a
@@ -167,6 +170,16 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
   .content {
     position: relative;
     z-index: 2; /* links and legal line stay above the grain */
+  }
+
+  @media (width < 32rem) {
+    .footer--full .legal-separator {
+      display: none;
+    }
+
+    .footer--full .legal-country {
+      display: block;
+    }
   }
 
   /* Inside an inset panel, the first and last letters bleed at the edges. */
