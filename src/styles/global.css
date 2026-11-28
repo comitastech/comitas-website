@@ -144,6 +144,7 @@
   --gutter: 16px;
   --page-margin: 20px;
   --section-space: 64px;
+  --header-height: 4rem; /* sticky header; anchors clear it */
 
   --focus-ring: var(--color-fg);
 }
@@ -159,6 +160,7 @@
   :root {
     --page-margin: 40px;
     --section-space: 96px;
+    --header-height: 5rem;
   }
 }
 
@@ -189,9 +191,13 @@
     }
   }
 
-  section[id],
+  /* The header is sticky: anchor targets stop below it. */
+  section[id] {
+    scroll-margin-top: calc(var(--header-height) + 1rem);
+  }
+
   h2[id] {
-    scroll-margin-top: 4rem;
+    scroll-margin-top: calc(var(--header-height) + 1.5rem);
   }
 
   ::selection {

@@ -1,21 +1,91 @@
 ---
 /**
- * Site header: approved wordmark (black), discreet size. Navigation arrives
- * with the section PRs.
+ * Site header: approved wordmark on the left; on the right the section links
+ * (mono, uppercase) and a small WhatsApp button.
+ *
+ * - Sticky: the page is one long scroll, so the links and the WhatsApp button
+ *   stay one tap away. It is transparent at the top and gets a translucent
+ *   page-colored background (blurred, with a hairline) once the page moves,
+ *   so text underneath never fights with the links.
+ * - Below 768px only the wordmark and the button show: three links do not
+ *   justify a hamburger menu (an extra tap to hide them), and the button is
+ *   the page's one action.
+ * - The link of the section in view is underlined (aria-current="location").
+ * - States: hover and keyboard focus draw the underline, pressed dims.
  */
+import Button from "./Button.astro";
 import Wordmark from "../assets/brand/comitas-wordmark-black.svg";
-import { site } from "../config/site";
+import { contactHref, site } from "../config/site";
 ---
 
-<header class="container-page">
-  <div class="flex h-16 items-center lg:h-20">
-    <a class="logo-link" href="/" aria-label={`${site.name}, página inicial`}>
-      <Wordmark class="block h-4 w-auto" aria-hidden="true" />
-    </a>
+<header class="site-header" data-site-header>
+  <div class="container-page">
+    <div class="flex h-(--header-height) items-center justify-between gap-6">
+      <a class="logo-link" href="/" aria-label={`${site.name}, página inicial`}>
+        <Wordmark class="block h-4 w-auto" aria-hidden="true" />
+      </a>
+      <div class="flex items-center gap-8">
+        <nav class="hidden md:block" aria-label="Principal">
+          <ul class="flex items-center gap-6 lg:gap-8">
+            {site.headerNav.map((item) => (
+              <li>
+                <a class="nav-link link type-label" href={item.href}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <Button href={contactHref} arrow="external" target="_blank">
+          WhatsApp
+        </Button>
+      </div>
+    </div>
   </div>
 </header>
 
+<script>
+  import "../scripts/header";
+</script>
+
 <style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid transparent;
+    transition:
+      background-color var(--duration-slow) var(--ease-standard),
+      border-color var(--duration-slow) var(--ease-standard);
+  }
+
+  /* Set by src/scripts/header.ts once the page has scrolled. */
+  .site-header[data-stuck] {
+    border-bottom-color: var(--color-line);
+    background-color: color-mix(in srgb, var(--color-bg) 90%, transparent);
+    backdrop-filter: blur(10px);
+  }
+
+  .nav-link {
+    display: inline-block;
+    padding-block: 6px;
+    border-radius: 2px;
+  }
+
+  .nav-link::after {
+    bottom: 1px;
+  }
+
+  .nav-link:focus-visible {
+    outline-offset: 4px;
+  }
+
+  /* The section in view keeps its underline, like a focused link. */
+  .nav-link[aria-current="location"]::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
   .logo-link {
     display: inline-flex;
     border-radius: 2px;
@@ -30,5 +100,19 @@ import { site } from "../config/site";
 
   .logo-link:active {
     opacity: 0.48;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-header {
+      transition: none;
+    }
+  }
+
+  /* No translucency in forced colors: use the system background. */
+  @media (forced-colors: active) {
+    .site-header[data-stuck] {
+      background-color: Canvas;
+      backdrop-filter: none;
+    }
   }
 </style>
