@@ -63,6 +63,7 @@ import { contactHref, site } from "../config/site";
   .site-header[data-stuck] {
     border-bottom-color: var(--color-line);
     background-color: color-mix(in srgb, var(--color-bg) 90%, transparent);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
 
