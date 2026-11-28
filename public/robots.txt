@@ -1,0 +1,6 @@
+# Crawling stays open on purpose. The site is kept out of search results with
+# noindex (meta tag + X-Robots-Tag header, see docs/indexing.md). A "Disallow: /"
+# here would stop crawlers from reading the noindex, and pages could stay indexed.
+# No Sitemap line while indexing is blocked.
+User-agent: *
+Allow: /

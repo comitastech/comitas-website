@@ -2,17 +2,23 @@
 import { Font } from "astro:assets";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import { indexing, NOINDEX } from "../config/indexing";
 import { site } from "../config/site";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description?: string;
-  /** Keeps internal pages (such as /design) out of search engines. */
+  /**
+   * Keeps this page out of search engines even when the site is indexable
+   * (internal pages such as /design). While `indexing.allowed` is false every
+   * page is noindex anyway.
+   */
   noindex?: boolean;
 }
 
 const { title, description, noindex = false } = Astro.props;
+const blockIndexing = noindex || !indexing.allowed;
 ---
 
 <!doctype html>
@@ -27,7 +33,7 @@ const { title, description, noindex = false } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {blockIndexing && <meta name="robots" content={NOINDEX} />}
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#f9f9f9" />
     <meta name="generator" content={Astro.generator} />
