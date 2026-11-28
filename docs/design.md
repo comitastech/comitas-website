@@ -56,7 +56,8 @@ Base para o design e o desenvolvimento do site. A copy está em `docs/copy.md`.
 - Largura máxima 1440px, grid de 12 colunas, gutter 24px.
 - Seções com ~96px de respiro vertical no desktop (~64px no celular).
 - Hero alinhado à esquerda, título grande, linha de apoio curta, um botão primário.
-- **Footer flutuante:** caixa `--color-inverse` com `border-radius: 12px`, afastada das bordas da página, sobre o fundo claro. Links e "© 2026 Comitas. Todos os direitos reservados. · Brasil · WhatsApp" no alto; embaixo, a logo oficial na largura toda, de borda a borda (sangrando levemente nas laterais), em 3 camadas empilhadas (`--color-layer-back`, `--color-fg-subtle`, `--color-layer-front`), cada uma escondendo o que está atrás dela, e a da frente cortada pela base da caixa ("vista explodida" da marca). Granulado sutil e estático sobre a caixa.
+- **Rodapé da home:** fundo `--color-inverse` de ponta a ponta, com cantos retos e até a base da página. Um vão claro de 48 px no desktop e 24 px no celular separa a chamada de pedra do rodapé. Links, linha legal e logo seguem as margens e a largura máxima do site. A logo mantém as 3 camadas (`--color-layer-back`, `--color-fg-subtle`, `--color-layer-front`) e o corte na base do rodapé. Granulado sutil e estático sobre o fundo.
+- No fim da rolagem em telas menores, o fundo base da home acompanha o rodapé em navegadores compatíveis. A página continua pintada de claro até o rodapé. A cor da área ao redor da barra inferior depende do navegador.
 
 ## Ilustrações e detalhes de ofício
 - Estilo **desenho técnico**: linhas de 1px em `--color-fg`, sem preenchimento ou com cinza leve, vistas explodidas e cortes.

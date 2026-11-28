@@ -1,14 +1,14 @@
 ---
 /**
- * Floating footer: a dark panel inset from the page edges, aligned with the
- * page container. Links and the legal line on top; below them the official
- * wordmark across (almost) the whole panel, in three stacked layers (an "exploded
- * view" of the brand) that bleed off the panel's bottom edge.
+ * On the home page the dark surface spans the viewport, while the contents
+ * follow the page grid. The wordmark has three stacked layers clipped at the
+ * bottom. Internal pages keep the inset panel.
  */
 import Wordmark from "../assets/brand/comitas-wordmark-white.svg";
 import { site } from "../config/site";
 
 const year = new Date().getFullYear();
+const fullWidth = Astro.url.pathname === "/";
 
 // Layer geometry, as fractions of the wordmark's height. The official SVG
 // is 467.74 x 70 units (viewBox), so height = width x 70 / 467.74.
@@ -17,7 +17,7 @@ const LAYERS = 3;
 
 /**
  * Two geometries, switched by CSS at the lg breakpoint:
- * - compact (desktop): the stack takes about 55-60% of the panel's height.
+ * - compact (desktop): the stack takes about 55-60% of the footer's height.
  *   The 30% step keeps the back strips suggestive of the letters while
  *   hiding the inner notch of the back layers' Λ (it starts at 38% of the
  *   letter height and would otherwise show as a tiny wedge); the front layer
@@ -51,9 +51,27 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
 }));
 ---
 
-<footer class="footer container-page pb-(--page-margin)">
-  <div class="panel rounded-panel bg-inverse text-on-inverse">
-    <div class="content grid-12 gap-y-10 px-6 pt-8 md:px-8 md:pt-10 lg:px-10 lg:pt-12">
+<footer
+  class:list={[
+    "footer",
+    fullWidth
+      ? "footer--full bg-inverse text-on-inverse"
+      : "container-page pb-(--page-margin)",
+  ]}
+>
+  <div
+    class={
+      fullWidth
+        ? "container-page"
+        : "panel rounded-panel bg-inverse text-on-inverse"
+    }
+  >
+    <div
+      class:list={[
+        "content grid-12 gap-y-10 pt-8 md:pt-10 lg:pt-12",
+        !fullWidth && "px-6 md:px-8 lg:px-10",
+      ]}
+    >
       <nav aria-label="Rodapé" class="col-span-12 md:col-span-6">
         <ul class="flex flex-wrap gap-x-6 gap-y-3 sm:gap-x-8">
           {site.nav.map((item) => (
@@ -70,8 +88,11 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
           © {year} {site.name}.
         </span>{" "}
         <span>Todos os direitos reservados.</span>{" "}
-        <span aria-hidden="true"> · </span>
-        <span class="whitespace-nowrap">
+        <span class="legal-separator" aria-hidden="true">
+          {" "}
+          ·{" "}
+        </span>
+        <span class="legal-country whitespace-nowrap">
           {site.country}
           <span aria-hidden="true"> · </span>
           <a
@@ -112,6 +133,30 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
 </script>
 
 <style>
+  /* WebKit can use the document color outside the page content. Keep a light
+     paint layer inside the page while changing only the backing color near
+     the footer. Leave the browser in charge of the safe area and toolbar. */
+  @media (width < 64rem) {
+    @supports (animation-timeline: scroll(root block)) and
+      (animation-range: calc(100% - 64px) 100%) {
+      :global(body:has(> .footer--full)) {
+        /* Keep the timeline out of the minified animation shorthand. */
+        --footer-scroll-timeline: scroll(root block);
+        background-color: var(--color-bg);
+        background-image: linear-gradient(var(--color-bg), var(--color-bg));
+        animation: footer-canvas-color 1ms step-start forwards;
+        animation-timeline: var(--footer-scroll-timeline);
+        animation-range: calc(100% - 64px) 100%;
+      }
+    }
+  }
+
+  @keyframes footer-canvas-color {
+    to {
+      background-color: var(--color-inverse);
+    }
+  }
+
   .footer {
     --focus-ring: var(--color-on-inverse);
   }
@@ -121,16 +166,18 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
     color: var(--color-inverse);
   }
 
-  .panel {
+  .panel,
+  .footer--full {
     position: relative;
     isolation: isolate;
-    overflow: hidden; /* the wordmark bleeds off the bottom and the sides */
+    overflow: hidden; /* crop the wordmark at the surface edges */
   }
 
   /* Subtle, static film grain over the background and the wordmark (below
      the text). A tiny SVG noise tile, repeated: no image to download, no
      animation. */
-  .panel::after {
+  .panel::after,
+  .footer--full::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -138,7 +185,7 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0.33 0.33 0.33 0 -0.14 0.33 0.33 0.33 0 -0.14 0.33 0.33 0.33 0 -0.14 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 160px 160px;
     /* Gray noise in soft-light: lightens and darkens around the base color,
-       so the panel keeps its color on average. */
+       so the surface keeps its color on average. */
     opacity: 0.4;
     mix-blend-mode: soft-light;
     pointer-events: none;
@@ -149,8 +196,17 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
     z-index: 2; /* links and legal line stay above the grain */
   }
 
-  /* Edge to edge: slightly wider than the panel, so the first and last
-     letters bleed off the sides (clipped by the panel). */
+  @media (width < 32rem) {
+    .footer--full .legal-separator {
+      display: none;
+    }
+
+    .footer--full .legal-country {
+      display: block;
+    }
+  }
+
+  /* Inside an inset panel, the first and last letters bleed at the edges. */
   .stack {
     position: relative;
     width: 102%;
@@ -161,19 +217,25 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
     aspect-ratio: var(--ratio);
   }
 
+  /* Keep the full-width footer's wordmark aligned to the content grid. */
+  .footer--full .stack {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
   @media (width >= 64rem) {
     .stack {
       --step: var(--step-lg);
       --stack-h: var(--stack-h-lg);
       --ratio: var(--ratio-lg);
-      /* More room above, so the stack is about half of the panel. */
+      /* Leave room above the wordmark for the footer links and legal line. */
       margin-block-start: clamp(5.5rem, 9vw, 8rem);
     }
   }
 
   /* Each layer: the official wordmark (unchanged SVG, fill set by CSS) on
-     top of a band in the panel color that starts at the top of its letters
-     and runs past the panel's bottom edge. The band hides everything behind
+     top of a band in the surface color that starts at the top of its letters
+     and runs past the footer's bottom edge. The band hides everything behind
      the layer, so of each back layer only the strip above the next one shows
      (strata), and letter counters show the dark background. */
   .layer {
