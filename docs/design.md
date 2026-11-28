@@ -57,6 +57,7 @@ Base para o design e o desenvolvimento do site. A copy está em `docs/copy.md`.
 - Seções com ~96px de respiro vertical no desktop (~64px no celular).
 - Hero alinhado à esquerda, título grande, linha de apoio curta, um botão primário.
 - **Rodapé da home:** fundo `--color-inverse` de ponta a ponta, com cantos retos e até a base da página. Um vão claro de 48 px no desktop e 24 px no celular separa a chamada de pedra do rodapé. Links, linha legal e logo seguem as margens e a largura máxima do site. A logo mantém as 3 camadas (`--color-layer-back`, `--color-fg-subtle`, `--color-layer-front`) e o corte na base do rodapé. Granulado sutil e estático sobre o fundo.
+- No fim da rolagem em telas menores, o fundo base da home acompanha o rodapé em navegadores compatíveis. A página continua pintada de claro até o rodapé. A cor da área ao redor da barra inferior depende do navegador.
 
 ## Ilustrações e detalhes de ofício
 - Estilo **desenho técnico**: linhas de 1px em `--color-fg`, sem preenchimento ou com cinza leve, vistas explodidas e cortes.

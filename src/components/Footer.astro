@@ -133,6 +133,30 @@ const layers = Array.from({ length: LAYERS }, (_, i) => ({
 </script>
 
 <style>
+  /* WebKit can use the document color outside the page content. Keep a light
+     paint layer inside the page while changing only the backing color near
+     the footer. Leave the browser in charge of the safe area and toolbar. */
+  @media (width < 64rem) {
+    @supports (animation-timeline: scroll(root block)) and
+      (animation-range: calc(100% - 64px) 100%) {
+      :global(body:has(> .footer--full)) {
+        /* Keep the timeline out of the minified animation shorthand. */
+        --footer-scroll-timeline: scroll(root block);
+        background-color: var(--color-bg);
+        background-image: linear-gradient(var(--color-bg), var(--color-bg));
+        animation: footer-canvas-color 1ms step-start forwards;
+        animation-timeline: var(--footer-scroll-timeline);
+        animation-range: calc(100% - 64px) 100%;
+      }
+    }
+  }
+
+  @keyframes footer-canvas-color {
+    to {
+      background-color: var(--color-inverse);
+    }
+  }
+
   .footer {
     --focus-ring: var(--color-on-inverse);
   }
